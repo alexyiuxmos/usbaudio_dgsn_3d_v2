@@ -43,10 +43,86 @@ extern "C" {
 }
 
 on tile[0]: in port p_buttons = XS1_PORT_8D;
+#define BUTTON_PIN 0b00100000
 on tile[0]: out port p_leds = XS1_PORT_4F;
+#define LED_R 0b00000100
 
 static unsigned char lastHidData;
 
+#if 1
+// Tile 0
+void button_task(chanend c_button)
+{
+    int current_val = 0, last_val = 0;
+    int is_stable = 0;
+    int button_pressed = 0;
+    timer tmr;
+    const unsigned debounce_delay_ms = 200;
+    unsigned debounce_timeout;
+    int current_time;
+    
+    tmr :> current_time;
+    debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
+    //p_buttons :> current_val;
+
+    while (1) {
+        select {
+#if 0
+            // if the button is stable, react when the i/o pin changes value
+            case is_stable => p_buttons when pinsneq(current_val) :> current_val:
+                if ((current_val & BUTTON_PIN) == BUTTON_PIN) {
+                    //printf("Button released\n");
+                    //printhex(current_val);
+                    if (button_pressed == 1) {
+                        button_pressed = 0; //button is released
+                        c_button <: 1; //((current_val >> 5) & 0x01);
+                    }                    
+                } else {
+                    //printf("Button pressed\n");
+                    button_pressed = 1;
+                    //button pressed
+                    //button_response();
+                    //c_button <: g_Ex3dSfIdx;
+                }
+                is_stable = 0;
+                int current_time;
+                tmr :> current_time;
+                // calculate time to event after debounce period
+                debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
+                break;
+            
+            case !is_stable => tmr when timerafter(debounce_timeout) :> void:
+                is_stable = 1;
+                break;
+#endif            
+            case tmr when timerafter(debounce_timeout) :> void:
+                p_buttons :> current_val;
+                current_val = current_val & BUTTON_PIN;
+                if (current_val != last_val) { // pin changed
+                    if ((current_val & BUTTON_PIN) == BUTTON_PIN) {
+                        //printf("Button released\n");
+                        //printhex(current_val);
+                        if (button_pressed == 1) {
+                            button_pressed = 0; //button is released
+                            c_button <: 1; //((current_val >> 5) & 0x01);
+                        }
+                    } else {
+                        //printf("Button pressed\n");
+                        button_pressed = 1;
+                        //button pressed
+                        //button_response();
+                        //c_button <: g_Ex3dSfIdx;
+                    }
+                }
+                //int current_time;
+                tmr :> current_time;
+                debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
+                last_val = current_val;
+                break;
+        }
+    }
+}
+#else
 void button_task(chanend c_button)
 {
     int button = 0;
@@ -68,17 +144,21 @@ void button_task(chanend c_button)
         }
     }
 }
+#endif
 
 void led_task(chanend c_led)
 {
     int led = 0;
+    static int led_status = 0; //LED_R;
 
-    audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 °ú °°Àº tile¿¡¼­ ½ÇÇà
+    audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ tileï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     while(1) {
         c_led :> led;
-        led = ~((led << 2) & 0x0c);
-        p_leds <: led;
+        //printf("led: ( %x )\n", led);
+        //led = (led << 2) ^ LED_R; //~((led << 2) & 0x0c);
+        led_status = led_status ^ LED_R;
+        p_leds <: (led_status);
     }
 }
 
