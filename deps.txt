@@ -1,0 +1,38 @@
+
+  sw_usb_audio:
+    +- lib_sw_pll 2.2.0 (required: None) 
+    |          lib_sw_pll: has no dependencies
+    +- lib_xua 4.1.0 (required: None) 
+    |       lib_xua:
+    |         +- lib_adat 1.2.0 (required: >=1.2.0) 
+    |         |        lib_adat: has no dependencies
+    |         +- lib_locks 2.2.0 (required: >=2.2.0) 
+    |         |         lib_locks: has no dependencies
+    |         +- lib_logging 3.2.0 (required: >=3.2.0) 
+    |         |           lib_logging: has no dependencies
+    |         +- lib_mic_array 4.6.0 (required: >=4.6.0) 
+    |         |             lib_mic_array:
+    |         |               +- lib_xassert 4.2.0 (required: >=4.2.0) 
+    |         |               |           lib_xassert: has no dependencies
+    |         |               +- lib_logging 3.2.0 (required: >=3.2.0) 
+    |         |               |           lib_logging: has no dependencies
+    |         |               +- lib_dsp 6.3.0 (required: >=6.0.0) 
+    |         |                       lib_dsp:
+    |         |                         +- lib_logging 3.2.0 (required: >=3.2.0) 
+    |         |                                     lib_logging: has no dependencies
+    |         +- lib_spdif 6.1.0 (required: >=6.1.0) 
+    |         |         lib_spdif: has no dependencies
+    |         +- lib_sw_pll 2.2.0 (required: >=2.2.0) 
+    |         |          lib_sw_pll: has no dependencies
+    |         +- lib_xassert 4.2.0 (required: >=4.2.0) 
+    |         |           lib_xassert: has no dependencies
+    |         +- lib_xud 2.3.1 (required: >=2.3.1) 
+    |                 lib_xud: has no dependencies
+    +- lib_i2c 6.2.0 (required: None) 
+    |       lib_i2c:
+    |         +- lib_xassert 4.2.0 (required: >=4.2.0) 
+    |                     lib_xassert: has no dependencies
+    +- lib_i2s 5.1.0 (required: None) 
+            lib_i2s:
+              +- lib_xassert 4.2.0 (required: >=4.2.0) 
+                          lib_xassert: has no dependencies
