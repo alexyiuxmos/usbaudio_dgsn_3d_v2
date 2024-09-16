@@ -664,11 +664,11 @@ int main()
             thread_speed();
             button_task(c_button);
         }
-        on tile[0]:
-        {
-            thread_speed();
-            led_task(c_led);
-        }
+//        on tile[0]:
+//        {
+//            thread_speed();
+//            led_task(c_led);
+//        }
         on tile[0]: convolution_task_sub_tile1(c_main_tile_to_sub_tile1);
 
         on tile[AUDIO_IO_TILE]: dsp_task(c_dsp, c_button, c_led, c_ex3d_started);

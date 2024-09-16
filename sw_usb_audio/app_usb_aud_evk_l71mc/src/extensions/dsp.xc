@@ -56,11 +56,15 @@ void button_task(chanend c_button)
     int current_val = 0, last_val = 0;
     int is_stable = 0;
     int button_pressed = 0;
+    int led_status = 0xFF;
+    uint32_t tmp;
     timer tmr;
     const unsigned debounce_delay_ms = 200;
     unsigned debounce_timeout;
     int current_time;
     
+    audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
+
     tmr :> current_time;
     debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
     //p_buttons :> current_val;
@@ -104,7 +108,9 @@ void button_task(chanend c_button)
                         //printhex(current_val);
                         if (button_pressed == 1) {
                             button_pressed = 0; //button is released
-                            c_button <: 1; //((current_val >> 5) & 0x01);
+                            //c_button <: 1; //((current_val >> 5) & 0x01);
+                            led_status = led_status ^ LED_R;
+                            p_leds <: (led_status);
                         }
                     } else {
                         //printf("Button pressed\n");
@@ -119,6 +125,11 @@ void button_task(chanend c_button)
                 debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
                 last_val = current_val;
                 break;
+            
+//            case c_button :> tmp:
+//                led_status = led_status ^ LED_R;
+//                p_leds <: (led_status);
+//                break;
         }
     }
 }
@@ -144,7 +155,6 @@ void button_task(chanend c_button)
         }
     }
 }
-#endif
 
 void led_task(chanend c_led)
 {
@@ -161,7 +171,7 @@ void led_task(chanend c_led)
         p_leds <: (led_status);
     }
 }
-
+#endif
 size_t UserHIDGetData( const unsigned id, unsigned char hidData[ HID_MAX_DATA_BYTES ])
 {
     // There is only one report, so the id parameter is ignored
