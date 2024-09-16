@@ -89,7 +89,7 @@ void led_task(chanend c_led)
     int led = 0;
     int last_led = 0;
 
-    audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 °ú °°Àº tile¿¡¼­ ½ÇÇà
+    audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ tileï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     while(1) {
         delay_milliseconds(20);

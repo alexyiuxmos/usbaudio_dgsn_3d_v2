@@ -10,6 +10,6 @@ typedef int16_t AUDIO_T;
 typedef int32_t AUDIO_T;
 #endif
 
-#define FRAME_SIZE          256    //128 samples / 48kHz = 2.6ms
+#define FRAME_SIZE          512//256    //128 samples / 48kHz = 2.6ms
 
 #endif
