@@ -19,7 +19,7 @@
 #include "DSPoint.h"
 
 #include "DSWinAPI.h"
-
+#include "c_dsp.h"
 #define DEBUG_UNIT EX3D_DEBUG
 #ifndef DEBUG_PRINT_ENABLE_EX3D_DEBUG
     #define DEBUG_PRINT_ENABLE_EX3D_DEBUG 1

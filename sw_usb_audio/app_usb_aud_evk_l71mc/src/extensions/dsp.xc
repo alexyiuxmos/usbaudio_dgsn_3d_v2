@@ -11,6 +11,8 @@
 #include "c_dsp.h"
 #include "print.h"
 
+#include <quadflashlib.h>
+
 #define MEASURE_ELAPSED_TIME
 
 /* Write HID Report Data into hidData array
@@ -30,6 +32,17 @@
 #define HID_CONTROL_VOLUP       0x08
 #define HID_CONTROL_VOLDN       0x10
 #define HID_CONTROL_MUTE        0x20
+
+//offset position for different angles
+#define OFFSET_V090H000 0
+#define OFFSET_V090H045 OFFSET_V090H000+SF_SIZE_PER_ANGLE
+#define OFFSET_V090H090 OFFSET_V090H045+SF_SIZE_PER_ANGLE
+#define OFFSET_V090H135 OFFSET_V090H090+SF_SIZE_PER_ANGLE
+#define OFFSET_V090H180 OFFSET_V090H135+SF_SIZE_PER_ANGLE
+#define OFFSET_V090H225 OFFSET_V090H180+SF_SIZE_PER_ANGLE
+#define OFFSET_V090H270 OFFSET_V090H225+SF_SIZE_PER_ANGLE
+#define OFFSET_V090H315 OFFSET_V090H270+SF_SIZE_PER_ANGLE
+#define OFFSET_LFE OFFSET_V090H315+SF_SIZE_PER_ANGLE
 
 extern "C" {
     extern void dsp_task_in_c(int bank);
@@ -51,6 +64,11 @@ static unsigned char lastHidData;
 
 #if 1
 // Tile 0
+void flash_read_task(chanend c_x_tile)
+{
+
+}
+
 void button_task(chanend c_button)
 {
     int current_val = 0, last_val = 0;

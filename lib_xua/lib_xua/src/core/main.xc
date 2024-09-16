@@ -256,6 +256,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 extern void button_task(chanend c_button);
 extern void led_task(chanend c_led);
 extern void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_started);
+extern void flash_read_task(chanend c_x_tile);
     #if defined(USE_OS)
 extern void ex3d_task(chanend c_ex3d_started);
 extern void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1);
@@ -554,6 +555,7 @@ int main()
 
     chan c_ex3d_started;
     chan c_main_tile_to_sub_tile1;
+    chan c_x_tile;
 #endif
 #endif
 
@@ -661,8 +663,12 @@ int main()
 #if (USE_EX3D == 1)
         on tile[0]:
         {
-            thread_speed();
+            //thread_speed();
             button_task(c_button);
+        }
+        on tile[0]:
+        {
+            flash_read_task(c_x_tile);
         }
 //        on tile[0]:
 //        {

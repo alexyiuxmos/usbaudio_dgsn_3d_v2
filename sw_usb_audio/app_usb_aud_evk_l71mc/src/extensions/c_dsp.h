@@ -12,4 +12,6 @@ typedef int32_t AUDIO_T;
 
 #define FRAME_SIZE          512//256    //128 samples / 48kHz = 2.6ms
 
+#define SF_SIZE_PER_ANGLE   8236 //2048 sound field data size per angle
+#define SF_SIZE_TOTAL       (SF_SIZE_PER_ANGLE * 9) // Total size for 1 sound field data
 #endif
