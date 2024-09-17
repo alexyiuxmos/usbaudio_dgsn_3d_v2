@@ -538,6 +538,7 @@ int CDSAudioProcessorChangeParameter( DWORD dwChannels, DWORD dwSampleSize, DWOR
 #else
 	DSTRACE(("[CDSAudioProcessor::ChangeParameter(%u, %u, %u Hz, %u), %d] Leaving...\n\r", dwChannels, dwSampleSize, dwSRHz, dwAudioDataSize, RetCode));
 #endif
+
 	return RetCode;
 }
 

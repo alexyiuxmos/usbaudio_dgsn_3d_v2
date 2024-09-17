@@ -19,7 +19,7 @@ extern uint8_t bEX3D_On;                // EX3D On 유무 저장
 extern uint8_t EX3D_SF_Idx;
 uint8_t g_ButtonCount = 1;
 
-
+#ifdef FLASH_READ
 extern unsigned char exir2k_xmos_game_wm_posData_v090h000[SF_SIZE_PER_ANGLE];
 extern unsigned char exir2k_xmos_game_wm_posData_v090h045[SF_SIZE_PER_ANGLE];
 extern unsigned char exir2k_xmos_game_wm_posData_v090h090[SF_SIZE_PER_ANGLE];
@@ -29,9 +29,21 @@ extern unsigned char exir2k_xmos_game_wm_posData_v090h225[SF_SIZE_PER_ANGLE];
 extern unsigned char exir2k_xmos_game_wm_posData_v090h270[SF_SIZE_PER_ANGLE];
 extern unsigned char exir2k_xmos_game_wm_posData_v090h315[SF_SIZE_PER_ANGLE];
 extern unsigned char exir2k_xmos_game_wm_posData_lfe[SF_SIZE_PER_ANGLE];
+#else
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h000[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h045[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h090[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h135[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h180[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h225[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h270[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_v090h315[SF_SIZE_PER_ANGLE];
+extern const unsigned char exir2k_xmos_game_wm_posData_lfe[SF_SIZE_PER_ANGLE];
+#endif
 
 void send_soundField_to_tile1(chanend_t c_copy2tile0)
 {
+#ifdef FLASH_READ
     chan_out_word(c_copy2tile0, 1); // sync
 
     for (int i = 0; i< SF_SIZE_PER_ANGLE; i++) {
@@ -39,12 +51,15 @@ void send_soundField_to_tile1(chanend_t c_copy2tile0)
         chanend_out_word(c_copy2tile0, exir2k_xmos_game_wm_posData_v090h000[i]);
     }
     return;
+#else
+    return;
+#endif
 }
 void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
 {
     uint32_t tmp;
     int i;
-    
+#ifdef FLASH_READ    
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
@@ -92,6 +107,9 @@ void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
         exir2k_xmos_game_wm_posData_v090h135[i] = chanend_in_word(c_copy_from_tile1);
     }
     debug_printf("SF8\n");
+#else
+    return;
+#endif
 }
 void UserBufferManagementInit(unsigned sampFreq)
 {

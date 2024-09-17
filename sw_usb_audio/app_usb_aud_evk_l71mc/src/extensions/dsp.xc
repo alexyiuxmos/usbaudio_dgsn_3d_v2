@@ -55,7 +55,7 @@ extern "C" {
     extern int audio_ex3d_conv_init(uint32_t dwTileNum, uint32_t dwChannels);
     extern void send_soundField_to_tile1(chanend c_copy2tile0);
     extern void get_soundField_from_tile0(chanend c_copy_from_tile1);
-#if 1
+#ifdef FLASH_READ
     extern unsigned char exir2k_xmos_game_wm_posData_v090h000[SF_SIZE_PER_ANGLE];
     extern unsigned char exir2k_xmos_game_wm_posData_v090h045[SF_SIZE_PER_ANGLE];
     extern unsigned char exir2k_xmos_game_wm_posData_v090h090[SF_SIZE_PER_ANGLE];
@@ -65,6 +65,16 @@ extern "C" {
     extern unsigned char exir2k_xmos_game_wm_posData_v090h270[SF_SIZE_PER_ANGLE];
     extern unsigned char exir2k_xmos_game_wm_posData_v090h315[SF_SIZE_PER_ANGLE];
     extern unsigned char exir2k_xmos_game_wm_posData_lfe[SF_SIZE_PER_ANGLE];
+#else 
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h000[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h045[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h090[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h135[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h180[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h225[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h270[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_v090h315[SF_SIZE_PER_ANGLE];
+    extern const unsigned char exir2k_xmos_game_wm_posData_lfe[SF_SIZE_PER_ANGLE];
 #endif
 }
 
@@ -133,6 +143,7 @@ typedef enum {
 #define FLASH_READ_POLLING_PERIOD (10 * 100000/*XS1_TIMER_HZ*/)
 void flash_read_task(chanend c_x_tile)
 {
+#ifdef FLASH_READ
     e_flash_read_state fread_state;
     timer tmr;
     const unsigned time_poll = 5;
@@ -269,6 +280,9 @@ void flash_read_task(chanend c_x_tile)
         tmr :> current_time;
         timeout = current_time + (FLASH_READ_POLLING_PERIOD);
     }
+#else
+    return;
+#endif
 }
 
 #endif
@@ -387,22 +401,22 @@ void ex3d_task(chanend c_ex3d_started)
     }
 }
 
-void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1)
+void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1, chanend c_conv0_started)
 {
     set_core_high_priority_on();
 	ConvolutionTaskInit();
-
+    c_conv0_started :> uint32_t tmp;
     while (1) {
         printf("sub1 ConvolutionTask(0)\n");
         ConvolutionTask(0, c_main_tile_to_sub_tile1);
     }
 }
 
-void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1)
+void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1, chanend c_conv_started)
 {
     set_core_high_priority_on();
 	ConvolutionTaskInit();
-
+    c_conv_started :> uint32_t tmp;
     while (1) {
         printf("main ConvolutionTask(0)\n");
         ConvolutionTask(0, c_main_tile_to_sub_tile1);
@@ -411,7 +425,7 @@ void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1)
 #endif
 
 //task to call C
-void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_started)
+void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_started, chanend c_conv_started, chanend c_conv0_started)
 {
     int bank, button, led_status;
 #if defined(MEASURE_ELAPSED_TIME) && !defined(USE_OS)
@@ -438,6 +452,8 @@ void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_sta
 
     uint32_t tmp;
     c_ex3d_started :> tmp;
+    c_conv_started <: 1;
+    c_conv0_started <: 1;
     printf("dsp_task started\n");
     while (1) {
         select {
