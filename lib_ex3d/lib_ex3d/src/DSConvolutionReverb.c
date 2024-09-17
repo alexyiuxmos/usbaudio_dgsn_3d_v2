@@ -876,7 +876,9 @@ static int _LoadSoundField(PCHAR szName)
 		if( m_pszSFName[0] ) UnloadSoundField();
 		
 		DS_CopyString(m_pszSFName, EX3D_SOUNDFIELD_NAME_MAX_LENGTH, szName);
-		DS_CopyString(pszBuf, dwBufSize, szName);
+		//alexy
+		//DS_CopyString(pszBuf, dwBufSize, szName);
+		DS_CopyString(pszBuf, dwBufSize, "exir2k_xmos_game_wm");
 		dwSfNameLen = strlen(pszBuf);
 		if(dwSfNameLen > EX3D_SOUNDFIELD_NAME_MAX_LENGTH) {
 			dwSfNameLen = EX3D_SOUNDFIELD_NAME_MAX_LENGTH;

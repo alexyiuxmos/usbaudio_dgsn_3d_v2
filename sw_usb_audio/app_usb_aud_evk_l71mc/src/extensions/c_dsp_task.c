@@ -127,7 +127,9 @@ void UserBufferManagementInit(unsigned sampFreq)
 int button_task_in_c(int button)
 {
     // just toggle EX3D on/off
-    audio_ex3d_toggle();
+    //audio_ex3d_toggle();
+    audio_ex3d_set_sf(button);       //set sound field
+    
 #if 0
     int led = 0;
     if(button == 0) {

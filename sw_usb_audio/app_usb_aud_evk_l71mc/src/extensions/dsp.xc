@@ -138,7 +138,6 @@ typedef enum {
     total_states
 } e_flash_read_state;
 
-#if 1
 // 10ms polling interval
 #define FLASH_READ_POLLING_PERIOD (10 * 100000/*XS1_TIMER_HZ*/)
 void flash_read_task(chanend c_x_tile)
@@ -297,19 +296,27 @@ void flash_read_task(chanend c_x_tile)
 #endif
 }
 
-#endif
+typedef enum {
+    sf_game = 0,
+    sf_music = 1,
+    sf_movie = 2,
+    sf_total_states
+} e_sf_status;
+
 void button_task(chanend c_button)
 {
     int current_val = 0, last_val = 0;
     int button_pressed = 0;
-    int status = 0x01;
+    e_sf_status status = sf_game;
     timer tmr;
     const unsigned debounce_delay_ms = 200;
     unsigned debounce_timeout;
     int current_time;
     
     //audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
-
+    
+    //sf_game mode on
+    p_leds <: (status << LED_R);
     tmr :> current_time;
     debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
     //p_buttons :> current_val;
@@ -325,7 +332,10 @@ void button_task(chanend c_button)
                         //printhex(current_val);
                         if (button_pressed == 1) {
                             button_pressed = 0; //button is released
-                            status = status ^ 0x01;
+                            
+                            status++;
+                            if (status >= sf_total_states) status = 0;
+
                             c_button <: status; //((current_val >> 5) & 0x01);
                             
                             p_leds <: (status << LED_R);
