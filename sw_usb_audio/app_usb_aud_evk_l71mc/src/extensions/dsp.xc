@@ -82,7 +82,7 @@ extern "C" {
 on tile[0]: in port p_buttons = XS1_PORT_8D;
 #define BUTTON_PIN 0b00100000
 on tile[0]: out port p_leds = XS1_PORT_4F;
-#define LED_R 0b00000100
+#define LED_R 2 // 0b00000100
 
 on tile[0]: fl_QSPIPorts p_qspi =
 {
@@ -302,7 +302,7 @@ void button_task(chanend c_button)
 {
     int current_val = 0, last_val = 0;
     int button_pressed = 0;
-    int led_status = 0xFF;
+    int status = 0x01;
     timer tmr;
     const unsigned debounce_delay_ms = 200;
     unsigned debounce_timeout;
@@ -325,9 +325,10 @@ void button_task(chanend c_button)
                         //printhex(current_val);
                         if (button_pressed == 1) {
                             button_pressed = 0; //button is released
-                            //c_button <: 1; //((current_val >> 5) & 0x01);
-                            led_status = led_status ^ LED_R;
-                            p_leds <: (led_status);
+                            status = status ^ 0x01;
+                            c_button <: status; //((current_val >> 5) & 0x01);
+                            
+                            p_leds <: (status << LED_R);
                         }
                     } else {
                         //printf("Button pressed\n");
@@ -403,7 +404,7 @@ void ex3d_task(chanend c_ex3d_started, chanend c_x_tile)
     set_core_high_priority_on();
     
     get_soundField_from_tile0(c_x_tile);
-//    printf("SF done tile1\n");
+
     if(audio_ex3d_init(NUM_USB_CHAN_OUT, NUM_USB_CHAN_OUT * FRAME_SIZE * sizeof(AUDIO_T), 48000, sizeof(AUDIO_T)) == 0) {
         printf("audio_ex3d_init() success\n\r");
     }
@@ -515,7 +516,7 @@ void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_sta
 
         case c_button :> button:
             led_status = button_task_in_c(button);
-            c_led <: (led_status & 0x03);
+            //c_led <: (led_status & 0x03);
             break;
         }
     }

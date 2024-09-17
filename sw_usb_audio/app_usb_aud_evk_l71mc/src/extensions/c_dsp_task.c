@@ -126,8 +126,10 @@ void UserBufferManagementInit(unsigned sampFreq)
 
 int button_task_in_c(int button)
 {
+    // just toggle EX3D on/off
+    audio_ex3d_toggle();
+#if 0
     int led = 0;
-
     if(button == 0) {
         // debug_printf("button:%d\n\r", button);
 #if 0
@@ -156,8 +158,8 @@ int button_task_in_c(int button)
 
     // led = g_ButtonCount;
     led |= (bEX3D_On);
-
     return led;
+#endif
 }
 
 void dsp_task_in_c(int bank)
