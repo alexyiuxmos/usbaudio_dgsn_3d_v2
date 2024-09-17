@@ -60,7 +60,8 @@ void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
 {
     uint32_t tmp;
     int i;
-#ifdef FLASH_READ    
+#ifdef FLASH_READ
+#if 0    
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
@@ -84,6 +85,7 @@ void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
         exir2k_xmos_game_wm_posData_v090h315[i] = chanend_in_word(c_copy_from_tile1);
     }
     //debug_printf("SF4\n");
+#endif
 #if 1
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {

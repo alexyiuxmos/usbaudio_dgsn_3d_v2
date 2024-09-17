@@ -157,17 +157,18 @@ void flash_read_task(chanend c_x_tile)
         return;
     }
     // debug;; tile 0
-    fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000);
-    fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h045);
-    fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h090);
-    fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h135);
+    //fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000);
+    //fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h045);
+    //fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h090);
+    //fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h135);
     fl_readData(OFFSET_V090H180, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
     fl_readData(OFFSET_V090H225, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
     fl_readData(OFFSET_V090H270, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
     fl_readData(OFFSET_V090H315, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);
     audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
     
-    fread_state = read_h180;
+    //fread_state = read_h180;
+    fread_state = read_h000;
 
     tmr :> current_time;
     timeout = current_time + (FLASH_READ_POLLING_PERIOD);
@@ -189,7 +190,7 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData h000 failed");
                             break;
                         }
-                        send_soundField_to_tile1(c_x_tile);
+                        //send_soundField_to_tile1(c_x_tile);
                         fread_state = read_h225;
                         break;
                     
@@ -198,7 +199,7 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData failed");
                             break;
                         }
-                        send_soundField_to_tile1(c_x_tile);
+                        //send_soundField_to_tile1(c_x_tile);
                         fread_state = read_h270;
                         break;
                     
@@ -207,7 +208,7 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData failed");
                             break;
                         }
-                        send_soundField_to_tile1(c_x_tile);
+                        //send_soundField_to_tile1(c_x_tile);
                         fread_state = read_h315;                    
                         break;
 
@@ -216,7 +217,7 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData failed");
                             break;
                         }
-                        send_soundField_to_tile1(c_x_tile);
+                        //send_soundField_to_tile1(c_x_tile);
                         fread_state = read_h000;                        
                         break;
 
