@@ -53,29 +53,219 @@ extern "C" {
 
     extern int audio_ex3d_init(uint32_t dwChannels, uint32_t dwSampleSize, uint32_t dwSRHz, uint32_t dwAudioDataSize);
     extern int audio_ex3d_conv_init(uint32_t dwTileNum, uint32_t dwChannels);
+    extern void send_soundField_to_tile1(chanend c_copy2tile0);
+    extern void get_soundField_from_tile0(chanend c_copy_from_tile1);
+#if 1
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h000[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h045[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h090[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h135[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h180[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h225[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h270[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_v090h315[SF_SIZE_PER_ANGLE];
+    extern unsigned char exir2k_xmos_game_wm_posData_lfe[SF_SIZE_PER_ANGLE];
+#endif
 }
+
 
 on tile[0]: in port p_buttons = XS1_PORT_8D;
 #define BUTTON_PIN 0b00100000
 on tile[0]: out port p_leds = XS1_PORT_4F;
 #define LED_R 0b00000100
 
+on tile[0]: fl_QSPIPorts p_qspi =
+{
+    PORT_SQI_CS_0,
+    PORT_SQI_SCLK_0,
+    PORT_SQI_SIO_0,
+    XS1_CLKBLK_1
+};
+static const fl_QuadDeviceSpec deviceSpec =
+{
+    0,                      /* unknown flash id */
+    256,                    /* page size */
+    32768,                  /* num pages */
+    3,                      /* address size */
+    2,                      /* log2 clock divider */
+    0x9F,                   /* QSPI_RDID */
+    0,                      /* id dummy bytes */
+    3,                      /* id size in bytes */
+    0xEF6017, //0xBA6016,               /* device id */
+    0x20,                   /* QSPI_SE */
+    4096,                   /* Sector erase is always 4KB */
+    0x06,                   /* QSPI_WREN */
+    0x04,                   /* QSPI_WRDI */
+    PROT_TYPE_SR,           /* no protection */
+    {{0x7C,0x00},{0,0}},    /* QSPI_SP, QSPI_SU */
+    0x02,                   /* QSPI_PP */
+    0xEB,                   /* QSPI_READ_FAST */
+    1,                      /* 1 read dummy byte */
+    SECTOR_LAYOUT_REGULAR,  /* mad sectors */
+    {4096,{0,{0}}},         /* regular sector sizes */
+    0x05,                   /* QSPI_RDSR */
+    0x01,                   /* QSPI_WRSR */
+    0x01,                   /* QSPI_WIP_BIT_MASK */    
+};
 static unsigned char lastHidData;
 
 #if 1
 // Tile 0
+
+typedef enum {
+    idle = 0,
+    reconnect = 1,
+    read_h000 = 2,
+    read_h045 = 3,
+    read_h090 = 4,
+    read_h135 = 5,
+    read_h180 = 6,
+    read_h225 = 7,
+    read_h270 = 8,
+    read_h315 = 9,
+    read_lfe = 10,
+    read_disconnect = 11,
+    total_states
+} e_flash_read_state;
+
+#if 1
+// 5ms polling interval
+#define FLASH_READ_POLLING_PERIOD (5 * 10000/*XS1_TIMER_HZ*/)
 void flash_read_task(chanend c_x_tile)
 {
+    e_flash_read_state fread_state;
+    timer tmr;
+    const unsigned time_poll = 5;
+    unsigned timeout;
+    int current_time;
 
+    // connect to flash device
+    if (fl_connectToDevice(p_qspi, &deviceSpec, 1) != 0) {
+        printstrln("fl_connectToDevice failed");
+        return;
+    }
+    fread_state = read_h000;
+
+    tmr :> current_time;
+    timeout = current_time + (FLASH_READ_POLLING_PERIOD);
+
+    while (1) {
+        select {
+            case tmr when timerafter(timeout) :> void:
+                switch (fread_state) {
+                    case reconnect:
+                        if (fl_connectToDevice(p_qspi, &deviceSpec, 1) != 0) {
+                            printstrln("fl_connectToDevice failed");
+                            break;
+                        }
+                        fread_state = read_h180;
+                        break;
+
+                    case read_h180:
+                        if (fl_readData(OFFSET_V090H180, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
+                            printstrln("fl_readData h000 failed");
+                            break;
+                        }
+                        send_soundField_to_tile1(c_x_tile);
+                        fread_state = read_h225;
+                        break;
+                    
+                    case read_h225:
+                        if (fl_readData(OFFSET_V090H225, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        send_soundField_to_tile1(c_x_tile);
+                        fread_state = read_h270;
+                        break;
+                    
+                    case read_h270:
+                        if (fl_readData(OFFSET_V090H270, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        send_soundField_to_tile1(c_x_tile);
+                        fread_state = read_h315;                    
+                        break;
+
+                    case read_h315:
+                        if (fl_readData(OFFSET_V090H315, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        send_soundField_to_tile1(c_x_tile);
+                        fread_state = read_h000;                        
+                        break;
+
+                    case read_h000:
+                        if (fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        fread_state = read_h045;                        
+                        break;
+
+                    case read_h045:
+                        if (fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h045) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        fread_state = read_h090;
+                        break;
+
+                    case read_h090:
+                        if (fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h090) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        fread_state = read_h135;                        
+                        break;
+
+                    case read_h135:
+                        if (fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h135) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        fread_state = read_lfe;                        
+                        break;
+
+                    case read_lfe:
+                        if (fl_readData(OFFSET_LFE, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
+                            printstrln("fl_readData failed");
+                            break;
+                        }
+                        fread_state = read_disconnect;                        
+                        break;
+
+                    case read_disconnect:
+                        fl_disconnect();
+                        fread_state = idle;
+                        break;
+
+                    case idle:
+                        break;
+
+                    default:
+                        break;
+                }
+                tmr :> current_time;
+                timeout = current_time + (FLASH_READ_POLLING_PERIOD);
+                break;  // case tmr
+            
+            case c_x_tile :> int tmp:
+                // sound field changed and read SF from flash
+                fread_state = reconnect;
+                break;  // case c_x_tile
+        }
+    }
 }
 
+#endif
 void button_task(chanend c_button)
 {
     int current_val = 0, last_val = 0;
-    int is_stable = 0;
     int button_pressed = 0;
     int led_status = 0xFF;
-    uint32_t tmp;
     timer tmr;
     const unsigned debounce_delay_ms = 200;
     unsigned debounce_timeout;
@@ -88,35 +278,7 @@ void button_task(chanend c_button)
     //p_buttons :> current_val;
 
     while (1) {
-        select {
-#if 0
-            // if the button is stable, react when the i/o pin changes value
-            case is_stable => p_buttons when pinsneq(current_val) :> current_val:
-                if ((current_val & BUTTON_PIN) == BUTTON_PIN) {
-                    //printf("Button released\n");
-                    //printhex(current_val);
-                    if (button_pressed == 1) {
-                        button_pressed = 0; //button is released
-                        c_button <: 1; //((current_val >> 5) & 0x01);
-                    }                    
-                } else {
-                    //printf("Button pressed\n");
-                    button_pressed = 1;
-                    //button pressed
-                    //button_response();
-                    //c_button <: g_Ex3dSfIdx;
-                }
-                is_stable = 0;
-                int current_time;
-                tmr :> current_time;
-                // calculate time to event after debounce period
-                debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
-                break;
-            
-            case !is_stable => tmr when timerafter(debounce_timeout) :> void:
-                is_stable = 1;
-                break;
-#endif            
+        select {        
             case tmr when timerafter(debounce_timeout) :> void:
                 p_buttons :> current_val;
                 current_val = current_val & BUTTON_PIN;
@@ -138,16 +300,10 @@ void button_task(chanend c_button)
                         //c_button <: g_Ex3dSfIdx;
                     }
                 }
-                //int current_time;
                 tmr :> current_time;
                 debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
                 last_val = current_val;
                 break;
-            
-//            case c_button :> tmp:
-//                led_status = led_status ^ LED_R;
-//                p_leds <: (led_status);
-//                break;
         }
     }
 }

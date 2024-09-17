@@ -1,6 +1,6 @@
 #include "digisonic.h"
 
-//#define FLASH_READ
+#define FLASH_READ
 
 const char exir2k_xmos_game_wm_sfName[] = "exir2k_xmos_game_wm";
 const char exir2k_xmos_game_wm_posName_v090h000[] = "v090h000";

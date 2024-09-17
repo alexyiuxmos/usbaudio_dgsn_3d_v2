@@ -8,6 +8,9 @@
 #include "math.h"
 #include "dsp.h"
 
+#include "xcore/channel.h"
+#include "xcore/chanend.h"
+
 // Double buffers to reduce time spent on moving data via channel
 AUDIO_T usb_to_dsp_buf[2][NUM_USB_CHAN_OUT][FRAME_SIZE];
 AUDIO_T dsp_to_usb_buf[2][NUM_USB_CHAN_IN][FRAME_SIZE];
@@ -16,6 +19,52 @@ extern uint8_t bEX3D_On;                // EX3D On 유무 저장
 extern uint8_t EX3D_SF_Idx;
 uint8_t g_ButtonCount = 1;
 
+
+extern unsigned char exir2k_xmos_game_wm_posData_v090h000[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_v090h045[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_v090h090[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_v090h135[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_v090h180[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_v090h225[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_v090h270[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_v090h315[SF_SIZE_PER_ANGLE];
+extern unsigned char exir2k_xmos_game_wm_posData_lfe[SF_SIZE_PER_ANGLE];
+
+void send_soundField_to_tile1(chanend_t c_copy2tile0)
+{
+    chan_out_word(c_copy2tile0, 1); // sync
+
+    for (int i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        //chanend_out_word(c_copy2tile0, exir2k_xmos_wm_posData_v090h045[i]);
+        chanend_out_word(c_copy2tile0, exir2k_xmos_game_wm_posData_v090h000[i]);
+    }
+    return;
+}
+void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
+{
+    uint32_t tmp;
+    int i;
+    
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        exir2k_xmos_game_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
+    }
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        //exir2k_xmos_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
+        exir2k_xmos_game_wm_posData_v090h225[i] = chanend_in_word(c_copy_from_tile1);
+    }
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        //exir2k_xmos_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
+        exir2k_xmos_game_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
+    }
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        //exir2k_xmos_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
+        exir2k_xmos_game_wm_posData_v090h315[i] = chanend_in_word(c_copy_from_tile1);
+    }
+}
 void UserBufferManagementInit(unsigned sampFreq)
 {
     debug_printf("audio_ex3d_change_parameter()++, ch:%d, size:%d, samfreq:%d\n\r", NUM_USB_CHAN_OUT, NUM_USB_CHAN_OUT * 2 * FRAME_SIZE, sampFreq);
