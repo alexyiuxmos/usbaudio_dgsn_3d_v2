@@ -73,7 +73,8 @@ XCC_FLAGS_2AMi2o8xxxxxx_l71_ex3d = $(BUILD_FLAGS)   -DUSE_EX3D=1 \
                                                     -DL71_HW=1 \
                                                     -DNUM_USB_CHAN_OUT=8 \
                                                     -DNUM_USB_CHAN_IN=2 \
-                                                    -DMAX_FREQ=48000
+                                                    -DMAX_FREQ=48000 \
+                                                    -DFLASH_READ
 
 # Audio Class 2, Async, I2S Master, 8xInput, 8xOutput
 INCLUDE_ONLY_IN_2AMi8o8xxxxxx =

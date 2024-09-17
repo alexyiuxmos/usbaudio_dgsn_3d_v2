@@ -259,7 +259,7 @@ extern void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_e
 extern void flash_read_task(chanend c_x_tile);
 extern void get_soundField_from_tile0(chanend c_copy_from_tile1);
     #if defined(USE_OS)
-extern void ex3d_task(chanend c_ex3d_started);
+extern void ex3d_task(chanend c_ex3d_started, chanend c_x_tile);
 extern void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1, chanend c_conv_started);
 extern void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1, chanend c_conv0_started);
     #endif
@@ -683,8 +683,8 @@ int main()
         on tile[AUDIO_IO_TILE]: dsp_task(c_dsp, c_button, c_led, c_ex3d_started, c_conv_started, c_conv0_started);
     #if defined(USE_OS)
         on tile[AUDIO_IO_TILE]: 
-        {   get_soundField_from_tile0(c_x_tile);
-            ex3d_task(c_ex3d_started);
+        {   
+            ex3d_task(c_ex3d_started, c_x_tile);
         }
         on tile[AUDIO_IO_TILE]: convolution_task_main_tile(c_main_tile_to_sub_tile1, c_conv_started);
     #endif
