@@ -49,21 +49,49 @@ void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
     }
+    debug_printf("SF1\n");
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         //exir2k_xmos_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h225[i] = chanend_in_word(c_copy_from_tile1);
     }
+    debug_printf("SF2\n");
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         //exir2k_xmos_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
     }
+    debug_printf("SF3\n");
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         //exir2k_xmos_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h315[i] = chanend_in_word(c_copy_from_tile1);
     }
+    debug_printf("SF4\n");
+
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        exir2k_xmos_game_wm_posData_v090h000[i] = chanend_in_word(c_copy_from_tile1);
+    }
+    debug_printf("SF5\n");
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        //exir2k_xmos_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
+        exir2k_xmos_game_wm_posData_v090h045[i] = chanend_in_word(c_copy_from_tile1);
+    }
+    debug_printf("SF6\n");
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        //exir2k_xmos_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
+        exir2k_xmos_game_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
+    }
+    debug_printf("SF7\n");
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        //exir2k_xmos_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
+        exir2k_xmos_game_wm_posData_v090h135[i] = chanend_in_word(c_copy_from_tile1);
+    }
+    debug_printf("SF8\n");
 }
 void UserBufferManagementInit(unsigned sampFreq)
 {

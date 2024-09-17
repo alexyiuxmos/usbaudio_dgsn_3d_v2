@@ -129,8 +129,8 @@ typedef enum {
 } e_flash_read_state;
 
 #if 1
-// 5ms polling interval
-#define FLASH_READ_POLLING_PERIOD (5 * 10000/*XS1_TIMER_HZ*/)
+// 10ms polling interval
+#define FLASH_READ_POLLING_PERIOD (10 * 100000/*XS1_TIMER_HZ*/)
 void flash_read_task(chanend c_x_tile)
 {
     e_flash_read_state fread_state;
@@ -140,11 +140,12 @@ void flash_read_task(chanend c_x_tile)
     int current_time;
 
     // connect to flash device
+    printstrln("Connecting to flash device...");
     if (fl_connectToDevice(p_qspi, &deviceSpec, 1) != 0) {
         printstrln("fl_connectToDevice failed");
         return;
     }
-    fread_state = read_h000;
+    fread_state = read_h180;
 
     tmr :> current_time;
     timeout = current_time + (FLASH_READ_POLLING_PERIOD);
@@ -198,34 +199,42 @@ void flash_read_task(chanend c_x_tile)
                         break;
 
                     case read_h000:
+                        //if (fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
                         if (fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
                             printstrln("fl_readData failed");
                             break;
                         }
+                        send_soundField_to_tile1(c_x_tile);
                         fread_state = read_h045;                        
                         break;
 
                     case read_h045:
-                        if (fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h045) != 0) {
+                        //if (fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h045) != 0) {
+                        if (fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
                             printstrln("fl_readData failed");
                             break;
                         }
+                        send_soundField_to_tile1(c_x_tile);
                         fread_state = read_h090;
                         break;
 
                     case read_h090:
-                        if (fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h090) != 0) {
+                        //if (fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h090) != 0) {
+                        if (fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
                             printstrln("fl_readData failed");
                             break;
                         }
+                        send_soundField_to_tile1(c_x_tile);
                         fread_state = read_h135;                        
                         break;
 
                     case read_h135:
-                        if (fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h135) != 0) {
+                        //if (fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h135) != 0) {
+                        if (fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
                             printstrln("fl_readData failed");
                             break;
                         }
+                        send_soundField_to_tile1(c_x_tile);
                         fread_state = read_lfe;                        
                         break;
 
@@ -248,8 +257,8 @@ void flash_read_task(chanend c_x_tile)
                     default:
                         break;
                 }
-                tmr :> current_time;
-                timeout = current_time + (FLASH_READ_POLLING_PERIOD);
+                //tmr :> current_time;
+                //timeout = current_time + (FLASH_READ_POLLING_PERIOD);
                 break;  // case tmr
             
             case c_x_tile :> int tmp:
@@ -257,6 +266,8 @@ void flash_read_task(chanend c_x_tile)
                 fread_state = reconnect;
                 break;  // case c_x_tile
         }
+        tmr :> current_time;
+        timeout = current_time + (FLASH_READ_POLLING_PERIOD);
     }
 }
 
