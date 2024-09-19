@@ -63,6 +63,7 @@ void get_soundField_000(chanend_t c_copy_from_tile1)
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h000[i] = chanend_in_word(c_copy_from_tile1);
     }
+    //printhex(exir2k_xmos_game_wm_posData_v090h000[0x30]);
 }
 void get_soundField_045(chanend_t c_copy_from_tile1)
 {
@@ -72,6 +73,7 @@ void get_soundField_045(chanend_t c_copy_from_tile1)
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h045[i] = chanend_in_word(c_copy_from_tile1);
     }
+    //printhex(exir2k_xmos_game_wm_posData_v090h045[0x60]);
 }
 void get_soundField_090(chanend_t c_copy_from_tile1)
 {
@@ -81,6 +83,7 @@ void get_soundField_090(chanend_t c_copy_from_tile1)
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
     }
+    //printhex(exir2k_xmos_game_wm_posData_v090h090[0x98]);
 }
 void get_soundField_135(chanend_t c_copy_from_tile1)
 {
@@ -90,6 +93,7 @@ void get_soundField_135(chanend_t c_copy_from_tile1)
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h135[i] = chanend_in_word(c_copy_from_tile1);
     }
+    //printhex(exir2k_xmos_game_wm_posData_v090h135[0xA0]);
 }
 
 void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
