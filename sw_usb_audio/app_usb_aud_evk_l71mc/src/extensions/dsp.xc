@@ -46,7 +46,7 @@
 
 extern "C" {
     extern void dsp_task_in_c(int bank);
-    extern int button_task_in_c(int button);
+    extern int button_task_in_c(int button, chanend c_x_tile);
     extern int OnProcessing();
 	extern void ConvolutionTaskInit();
     extern void ConvolutionTask(int taskIdx, chanend c_main_tile_to_sub_tile1);
@@ -135,19 +135,22 @@ typedef enum {
     read_h315 = 9,
     read_lfe = 10,
     read_disconnect = 11,
+    load_SF = 12,
     total_states
 } e_flash_read_state;
 
+e_flash_read_state g_fread_state;
+
 // 10ms polling interval
 #define FLASH_READ_POLLING_PERIOD (10 * 100000/*XS1_TIMER_HZ*/)
-void flash_read_task(chanend c_x_tile)
+void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
 {
 #ifdef FLASH_READ
-    e_flash_read_state fread_state;
     timer tmr;
     const unsigned time_poll = 5;
     unsigned timeout;
     int current_time;
+    uint32_t offset = 0;
 
     // connect to flash device
     printstrln("Connecting to flash device...");
@@ -165,9 +168,18 @@ void flash_read_task(chanend c_x_tile)
     fl_readData(OFFSET_V090H270, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
     fl_readData(OFFSET_V090H315, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);
     audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
+
+    fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+    send_soundField_to_tile1(c_x_tile);
+    fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+    send_soundField_to_tile1(c_x_tile);
+    fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+    send_soundField_to_tile1(c_x_tile);
+    fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+    send_soundField_to_tile1(c_x_tile);
     
-    //fread_state = read_h180;
-    fread_state = read_h000;
+    //g_fread_state = read_h180;
+    g_fread_state = idle;
 
     tmr :> current_time;
     timeout = current_time + (FLASH_READ_POLLING_PERIOD);
@@ -175,49 +187,53 @@ void flash_read_task(chanend c_x_tile)
     while (1) {
         select {
             case tmr when timerafter(timeout) :> void:
-                switch (fread_state) {
+                switch (g_fread_state) {
                     case reconnect:
                         if (fl_connectToDevice(p_qspi, &deviceSpec, 1) != 0) {
                             printstrln("fl_connectToDevice failed");
                             break;
                         }
-                        fread_state = read_h180;
+                        g_fread_state = read_h180;
                         break;
 
                     case read_h180:
-                        if (fl_readData(OFFSET_V090H180, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
-                            printstrln("fl_readData h000 failed");
+                        if (fl_readData(OFFSET_V090H180, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180) != 0) {
+                            printstrln("fl_readData failed");
                             break;
                         }
                         //send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_h225;
+                        g_fread_state = read_h225;
+                        printstrln("read_h180");
                         break;
                     
                     case read_h225:
-                        if (fl_readData(OFFSET_V090H225, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
+                        if (fl_readData(OFFSET_V090H225, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225) != 0) {
                             printstrln("fl_readData failed");
                             break;
                         }
                         //send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_h270;
+                        g_fread_state = read_h270;
+                        printstrln("read_h225");
                         break;
                     
                     case read_h270:
-                        if (fl_readData(OFFSET_V090H270, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
+                        if (fl_readData(OFFSET_V090H270, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270) != 0) {
                             printstrln("fl_readData failed");
                             break;
                         }
                         //send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_h315;                    
+                        g_fread_state = read_h315;
+                        printstrln("read_h270");                    
                         break;
 
                     case read_h315:
-                        if (fl_readData(OFFSET_V090H315, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
+                        if (fl_readData(OFFSET_V090H315, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315) != 0) {
                             printstrln("fl_readData failed");
                             break;
                         }
                         //send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_h000;                        
+                        g_fread_state = read_h000;
+                        printstrln("read_h315");                        
                         break;
 
                     case read_h000:
@@ -226,8 +242,9 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData failed");
                             break;
                         }
-                        send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_h045;                        
+                        printstrln("read_h000");
+                        send_soundField_to_tile1(c_chg_sf);
+                        g_fread_state = read_h045;                        
                         break;
 
                     case read_h045:
@@ -236,8 +253,9 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData failed");
                             break;
                         }
-                        send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_h090;
+                        printstrln("read_h045");
+                        send_soundField_to_tile1(c_chg_sf);
+                        g_fread_state = read_h090;
                         break;
 
                     case read_h090:
@@ -246,8 +264,9 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData failed");
                             break;
                         }
-                        send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_h135;                        
+                        printstrln("read_h090");
+                        send_soundField_to_tile1(c_chg_sf);
+                        g_fread_state = read_h135;                        
                         break;
 
                     case read_h135:
@@ -255,9 +274,11 @@ void flash_read_task(chanend c_x_tile)
                         if (fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
                             printstrln("fl_readData failed");
                             break;
-                        }
-                        send_soundField_to_tile1(c_x_tile);
-                        fread_state = read_lfe;                        
+                        }                        
+                        send_soundField_to_tile1(c_chg_sf);
+                        printstrln("read_h135");
+                        //g_fread_state = read_lfe;                        
+                        g_fread_state = idle;
                         break;
 
                     case read_lfe:
@@ -265,15 +286,32 @@ void flash_read_task(chanend c_x_tile)
                             printstrln("fl_readData failed");
                             break;
                         }
-                        fread_state = read_disconnect;                        
+                        printstrln("read_lfe");
+                        g_fread_state = idle; //read_disconnect;                        
                         break;
 
                     case read_disconnect:
                         fl_disconnect();
-                        fread_state = idle;
+                        g_fread_state = idle;
                         break;
 
                     case idle:
+                        break;
+                    
+                    case load_SF:
+                        fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
+                        fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
+                        fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
+                        fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);                    
+                        fl_readData(OFFSET_V090H000 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+                        send_soundField_to_tile1(c_chg_sf);
+                        fl_readData(OFFSET_V090H045 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+                        send_soundField_to_tile1(c_chg_sf);
+                        fl_readData(OFFSET_V090H090+ offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+                        send_soundField_to_tile1(c_chg_sf);
+                        fl_readData(OFFSET_V090H135 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
+                        send_soundField_to_tile1(c_chg_sf);
+                        g_fread_state = idle;
                         break;
 
                     default:
@@ -285,8 +323,17 @@ void flash_read_task(chanend c_x_tile)
             
             case c_x_tile :> int tmp:
                 // sound field changed and read SF from flash
-                fread_state = reconnect;
+                g_fread_state = reconnect;
                 break;  // case c_x_tile
+
+            case c_flash_rd_req :> int tmp:
+                if (g_fread_state == idle) {
+                    //printstrln("idle");
+                    //g_fread_state = read_h180;
+                    offset = tmp * SF_SIZE_TOTAL;   // offset position for each sound field    
+                    g_fread_state = load_SF;
+                }
+                break;  // case c_flash_read_req
         }
         tmr :> current_time;
         timeout = current_time + (FLASH_READ_POLLING_PERIOD);
@@ -303,7 +350,7 @@ typedef enum {
     sf_total_states
 } e_sf_status;
 
-void button_task(chanend c_button)
+void button_task(chanend c_button, chanend c_flash_rd_req)
 {
     int current_val = 0, last_val = 0;
     int button_pressed = 0;
@@ -339,6 +386,8 @@ void button_task(chanend c_button)
                             c_button <: status; //((current_val >> 5) & 0x01);
                             
                             p_leds <: (status << LED_R);
+                            //read sound field
+                            c_flash_rd_req <: status;
                         }
                     } else {
                         //printf("Button pressed\n");
@@ -427,22 +476,22 @@ void ex3d_task(chanend c_ex3d_started, chanend c_x_tile)
     }
 }
 
-void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1, chanend c_conv0_started)
+void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1)
 {
     set_core_high_priority_on();
 	ConvolutionTaskInit();
-    //c_conv0_started :> uint32_t tmp;
+    
     while (1) {
         printf("sub1 ConvolutionTask(0)\n");
         ConvolutionTask(0, c_main_tile_to_sub_tile1);
     }
 }
 
-void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1, chanend c_conv_started)
+void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1)
 {
     set_core_high_priority_on();
 	ConvolutionTaskInit();
-    //c_conv_started :> uint32_t tmp;
+    
     while (1) {
         printf("main ConvolutionTask(0)\n");
         ConvolutionTask(0, c_main_tile_to_sub_tile1);
@@ -451,7 +500,7 @@ void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1, chanend c_conv
 #endif
 
 //task to call C
-void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_started, chanend c_conv_started, chanend c_conv0_started)
+void dsp_task(chanend c_dsp, chanend c_button, chanend c_x_tile, chanend c_ex3d_started, chanend c_chg_sf)
 {
     int bank, button, led_status;
 #if defined(MEASURE_ELAPSED_TIME) && !defined(USE_OS)
@@ -525,7 +574,7 @@ void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_sta
             break;
 
         case c_button :> button:
-            led_status = button_task_in_c(button);
+            led_status = button_task_in_c(button, c_chg_sf);
             //c_led <: (led_status & 0x03);
             break;
         }

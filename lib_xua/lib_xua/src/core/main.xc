@@ -253,15 +253,15 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #endif /* XUA_USB_EN */
 
 #if (USE_EX3D == 1)
-extern void button_task(chanend c_button);
+extern void button_task(chanend c_button, chanend c_flash_rd_req);
 extern void led_task(chanend c_led);
-extern void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_started, chanend c_conv_started, chanend c_conv0_started);
-extern void flash_read_task(chanend c_x_tile);
+extern void dsp_task(chanend c_dsp, chanend c_button, chanend c_led, chanend c_ex3d_started, chanend c_chg_sf);
+extern void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf);
 extern void get_soundField_from_tile0(chanend c_copy_from_tile1);
     #if defined(USE_OS)
 extern void ex3d_task(chanend c_ex3d_started, chanend c_x_tile);
-extern void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1, chanend c_conv_started);
-extern void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1, chanend c_conv0_started);
+extern void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1);
+extern void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1);
     #endif
 #endif
 #if (DSP_TASK == 1)
@@ -555,8 +555,9 @@ int main()
     chan c_led;
 
     chan c_ex3d_started;
-    chan c_conv_started;
+    chan c_chg_sf;
     chan c_conv0_started;
+    chan c_flash_rd_req;
     chan c_main_tile_to_sub_tile1;
     chan c_x_tile;
 #endif
@@ -667,26 +668,26 @@ int main()
         on tile[0]:
         {
             //thread_speed();
-            button_task(c_button);
+            button_task(c_button, c_flash_rd_req);
         }
         on tile[0]:
         {
-            flash_read_task(c_x_tile);
+            flash_read_task(c_x_tile, c_flash_rd_req, c_chg_sf);
         }
 //        on tile[0]:
 //        {
 //            thread_speed();
 //            led_task(c_led);
 //        }
-        on tile[0]: convolution_task_sub_tile1(c_main_tile_to_sub_tile1, c_conv0_started);
+        on tile[0]: convolution_task_sub_tile1(c_main_tile_to_sub_tile1);
 
-        on tile[AUDIO_IO_TILE]: dsp_task(c_dsp, c_button, c_led, c_ex3d_started, c_conv_started, c_conv0_started);
+        on tile[AUDIO_IO_TILE]: dsp_task(c_dsp, c_button, c_led, c_ex3d_started, c_chg_sf);
     #if defined(USE_OS)
         on tile[AUDIO_IO_TILE]: 
         {   
             ex3d_task(c_ex3d_started, c_x_tile);
         }
-        on tile[AUDIO_IO_TILE]: convolution_task_main_tile(c_main_tile_to_sub_tile1, c_conv_started);
+        on tile[AUDIO_IO_TILE]: convolution_task_main_tile(c_main_tile_to_sub_tile1);
     #endif
 #endif
 #if (DSP_TASK == 1)

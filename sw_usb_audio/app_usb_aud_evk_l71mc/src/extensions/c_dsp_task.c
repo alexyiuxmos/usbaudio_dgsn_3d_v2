@@ -109,7 +109,7 @@ void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
         //exir2k_xmos_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h135[i] = chanend_in_word(c_copy_from_tile1);
     }
-    //debug_printf("SF8\n");
+    debug_printf("SF8\n");
 #endif
 
 #else
@@ -124,10 +124,11 @@ void UserBufferManagementInit(unsigned sampFreq)
     }
 }
 
-int button_task_in_c(int button)
+int button_task_in_c(int button, chanend_t c_chg_sf)
 {
     // just toggle EX3D on/off
     //audio_ex3d_toggle();
+    get_soundField_from_tile0(c_chg_sf);
     audio_ex3d_set_sf(button);       //set sound field
     
 #if 0
