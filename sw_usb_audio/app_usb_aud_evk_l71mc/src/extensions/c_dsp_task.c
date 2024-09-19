@@ -45,7 +45,6 @@ void send_soundField_to_tile1(chanend_t c_copy2tile0)
 {
 #ifdef FLASH_READ
     chan_out_word(c_copy2tile0, 1); // sync
-
     for (int i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         //chanend_out_word(c_copy2tile0, exir2k_xmos_wm_posData_v090h045[i]);
         //chanend_out_word(c_copy2tile0, exir2k_xmos_game_wm_posData_v090h000[i]);
@@ -56,6 +55,43 @@ void send_soundField_to_tile1(chanend_t c_copy2tile0)
     return;
 #endif
 }
+void get_soundField_000(chanend_t c_copy_from_tile1)
+{
+    uint32_t tmp;
+    int i;
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        exir2k_xmos_game_wm_posData_v090h000[i] = chanend_in_word(c_copy_from_tile1);
+    }
+}
+void get_soundField_045(chanend_t c_copy_from_tile1)
+{
+    uint32_t tmp;
+    int i;    
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        exir2k_xmos_game_wm_posData_v090h045[i] = chanend_in_word(c_copy_from_tile1);
+    }
+}
+void get_soundField_090(chanend_t c_copy_from_tile1)
+{
+    uint32_t tmp;
+    int i;
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        exir2k_xmos_game_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
+    }
+}
+void get_soundField_135(chanend_t c_copy_from_tile1)
+{
+    uint32_t tmp;
+    int i;
+    tmp = chan_in_word(c_copy_from_tile1);
+    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
+        exir2k_xmos_game_wm_posData_v090h135[i] = chanend_in_word(c_copy_from_tile1);
+    }
+}
+
 void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
 {
     uint32_t tmp;
@@ -109,7 +145,7 @@ void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
         //exir2k_xmos_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h135[i] = chanend_in_word(c_copy_from_tile1);
     }
-    debug_printf("SF8\n");
+    //debug_printf("SF8\n");
 #endif
 
 #else
@@ -128,7 +164,7 @@ int button_task_in_c(int button, chanend_t c_chg_sf)
 {
     // just toggle EX3D on/off
     //audio_ex3d_toggle();
-    get_soundField_from_tile0(c_chg_sf);
+    //get_soundField_from_tile0(c_chg_sf);
     audio_ex3d_set_sf(button);       //set sound field
     
 #if 0
