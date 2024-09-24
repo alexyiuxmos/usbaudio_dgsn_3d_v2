@@ -148,6 +148,22 @@ int audio_ex3d_conv_init(uint32_t dwTileNum, uint32_t dwChannels)
     return ret;
 }
 
+int audio_ex3d_conv_setSF(uint32_t dwTileNum, uint32_t dwChannels, uint32_t sf_idx)
+{
+    int ret = NO_ERR;
+
+    log_info(("sound field: %s\n\r", sfName[sf_idx]));
+    log_info(("audio_ex3d_conv_setSF(%d)...\n\r", dwTileNum));
+//    audio_ex3d_deinit();
+//    CDSConvolutionReverbPrepareEX3DSoundFields();
+//    ret = EX3DAudio_SetSoundField((PCHAR)sfName[(sf_idx)]);
+    ret = EX3DConv_SetSoundField(dwTileNum, dwChannels, (PCHAR)sfName[sf_idx]);
+    
+//    EX3DConv_Open(1, dwChannels, (PCHAR)sfName[sf_idx]);
+
+    return ret;
+}
+
 int audio_ex3d_deinit(void)
 {
     log_info(("[%s, Enter] bEX3D_Open:%d", __FUNCTION__, bEX3D_Open));

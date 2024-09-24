@@ -61,6 +61,18 @@ int EX3DConv_Open(	DWORD dwTileNum,
 	return RetCode;
 }
 
+int EX3DConv_SetSoundField(DWORD dwTileNum, DWORD dwChannels, PCHAR pszSFName)
+{
+	int RetCode = NO_ERR;
+
+	//RetCode = CDSConvolutionReverbClose();
+	CDSConvolutionReverbPrepareEX3DSoundFields();
+	//RetCode = CDSConvolutionReverbOpen(dwChannels, 0, pszSFName, false);
+	RetCode = CDSConvolutionSetSoundField(pszSFName);
+	//DSTRACE(("[EX3DAudio_SetSoundField(), %d] Leaving...\n\r", RetCode));
+	return RetCode;
+}
+
 /* ------------------------------------------------------------------------
     기    능: EX-3D 오디오를 닫는다.
 	매개변수: 없음

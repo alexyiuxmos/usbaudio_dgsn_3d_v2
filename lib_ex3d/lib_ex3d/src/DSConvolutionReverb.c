@@ -125,6 +125,33 @@ int CDSConvolutionReverbOpen(DWORD dwChannels, DWORD dwIN_CR_SampleNum, PCHAR ps
 	return RetCode;
 }
 
+int CDSConvolutionSetSoundField(PCHAR pszName)
+{
+	PEX3DSOUNDFIELD pSF = NULL;
+	int RetCode = NO_ERR;
+	if( pszName ){
+		pSF = GetEX3DSoundField(pszName);	// 입력 음장 Load
+	}
+
+	// 입력 음장이 없으면 default 음장 load
+	if(!pSF) {
+		char * pDefaultUnitName = (PCHAR)"exir2k_xmos_game_wm";
+
+		pSF = GetEX3DSoundField(pDefaultUnitName);
+		if( !pSF ){
+			DSTRACE(("[Error - CDSConvolutionReverb%u::_Open()] %s: Not found!! Exiting...\n\r", m_dwTileNum, pDefaultUnitName));
+			RetCode = ERR_NOT_FOUND;
+		}
+	}
+
+	if(RetCode == NO_ERR) {
+		RetCode = _LoadSoundField(pSF->szName);
+		if(RetCode != NO_ERR){
+			DSTRACE(("[Error - CDSConvolutionReverb%u::_Open(), %d] '_LoadSoundField()' Failed!! Exiting...\n\r", m_dwTileNum, RetCode));
+		}
+	}
+}
+
 /* ------------------------------------------------------------------------
     기    능: 컨볼루션 리버브(CDSConvolutionReverb)를 연다.
 	매개변수: pszSFDirectory	-> 음장 디렉토리 경로 문자열 CHAR 포인터
@@ -508,16 +535,16 @@ void ConvolutionTask(int taskIdx, chanend c_main_tile_to_sub_tile1)
 	int nextIdx = taskIdx + 1;
 
 	DSTRACE(("ConvolutionTask%u\n\r", m_dwTileNum));
- 	while(1) {
+ 	while(1) {	
 		if(ConvolutionPauseGet(taskIdx) == TRUE) {
 			if(nextIdx < EX3D_UNIT_TASK_NUM) {
 				if(ConvolutionPauseGet(nextIdx) == FALSE) {
 					ConvolutionPauseSet(nextIdx, TRUE);
-					DSTRACE(("[ConvolutionTask%u::ConvolutionPauseSet(%d, TRUE)]\n\r", m_dwTileNum, nextIdx));
+					//DSTRACE(("[ConvolutionTask%u::ConvolutionPauseSet(%d, TRUE)]\n\r", m_dwTileNum, nextIdx));
 				}
 			} else {
 				ConvolutionPauseCompleteSet(TRUE);
-				// DSTRACE(("[ConvolutionTask%u::ConvolutionPauseCompleteSet(TRUE)]\n\r", m_dwTileNum));
+				//DSTRACE(("[ConvolutionTask%u::ConvolutionPauseCompleteSet(TRUE)]\n\r", m_dwTileNum));
 			}
 
 			Sleep(1);
@@ -546,7 +573,6 @@ void ConvolutionTask(int taskIdx, chanend c_main_tile_to_sub_tile1)
 
 			if(m_dwTileNum == EX3D_TILE_MAIN) {
 				PPOINT_T pInBuf = pBuf + (m_dwIN_CR_SampleNum * m_uiUnitCount);
-
 				// debug_printf("main tile:%x\n", *(pInBuf + m_dwIN_CR_SampleNum));
 				chan_out_word(c_main_tile_to_sub_tile1, 1); // sync
 				for (int i = 0; i < end; i++) {
@@ -555,8 +581,7 @@ void ConvolutionTask(int taskIdx, chanend c_main_tile_to_sub_tile1)
 				}
 			} else {
 				PPOINT_T pInBuf = m_pTaskUnitInBuf;
-				uint32_t tmp;
-		
+				uint32_t tmp;		
 				tmp = chan_in_word(c_main_tile_to_sub_tile1);
 				for (int i = 0; i < end; i++) {
 					*pInBuf = chanend_in_word(c_main_tile_to_sub_tile1);
@@ -852,7 +877,6 @@ static int _LoadSoundField(PCHAR szName)
 	int RetCode = NO_ERR;
 
 	DSTRACE(("[CDSConvolutionReverb%u::_LoadSoundField(%s), m_uiUnitCount: %u] Entering...\n\r", m_dwTileNum, szName, m_uiUnitCount));
-
 	/* --------------------------------------------------------------
 		음장이 같으면 해당 위치의 컨볼루션 리버브단 데이터만 설정한다.
 		다르면 전체 위치의 모든 컨볼루션 리버브단 데이터들을 모두 불려온다.
@@ -870,11 +894,9 @@ static int _LoadSoundField(PCHAR szName)
 		ConvolutionPauseSet(0, TRUE);
 		DSTRACE(("[CDSConvolutionReverb%u::_LoadSoundField, ConvolutionPauseSet(TRUE)]\n\r", m_dwTileNum));
 		ConvolutionPauseCompleteChk();
-		// DSTRACE(("[CDSConvolutionReverb%u::_LoadSoundField, ConvolutionPauseCompleteChk()]\n\r", m_dwTileNum));
-
+		DSTRACE(("[CDSConvolutionReverb%u::_LoadSoundField, ConvolutionPauseCompleteChk()]\n\r", m_dwTileNum));
 		// 이전 EX-3D 음장을 모두 없앤다.
 		if( m_pszSFName[0] ) UnloadSoundField();
-		
 		DS_CopyString(m_pszSFName, EX3D_SOUNDFIELD_NAME_MAX_LENGTH, szName);
 		//alexy
 		//DS_CopyString(pszBuf, dwBufSize, szName);
@@ -883,7 +905,6 @@ static int _LoadSoundField(PCHAR szName)
 		if(dwSfNameLen > EX3D_SOUNDFIELD_NAME_MAX_LENGTH) {
 			dwSfNameLen = EX3D_SOUNDFIELD_NAME_MAX_LENGTH;
 		}
-
 		if(m_dwIN_CR_SampleNum == 0) {
 			DSTRACE(("[CDSConvolutionReverb%u::_LoadSoundField()] m_dwIN_CR_SampleNum(%u) is set DEFAULT_IN_CR_SAMPLE_NUM(%u)\n\r", m_dwTileNum, m_dwIN_CR_SampleNum, DEFAULT_IN_CR_SAMPLE_NUM));
 			m_dwIN_CR_SampleNum = DEFAULT_IN_CR_SAMPLE_NUM;
@@ -896,7 +917,6 @@ static int _LoadSoundField(PCHAR szName)
 			}
 		}
 		dwCR_DataNum <<= 1;
-
 		DS_BOOL bNeedNewDscrBuffer;
 		if(m_pTaskUnitOutBuf == NULL) {
 			NEW_DSBUFFER("CDSConvolutionReverb::_LoadSoundField()", m_pTaskUnitOutBuf, DSCRDATA, EX3D_UNIT_TASK_NUM, ERR_MEM_NULL);

@@ -59,6 +59,7 @@ typedef struct _EX3DSOUNDFIELD_
 	DWORD dwFlags;										// 플래그값
 }EX3DSOUNDFIELD, *PEX3DSOUNDFIELD;
 
+EXTERN int CDSConvolutionSetSoundField(PCHAR pszName);
 
 EXTERN void CDSConvolutionReverb(DWORD dwTileNum);
 EXTERN void CDSConvolutionReverbDestroyer();
