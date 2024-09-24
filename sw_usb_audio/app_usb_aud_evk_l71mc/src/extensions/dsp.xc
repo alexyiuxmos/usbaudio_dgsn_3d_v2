@@ -162,6 +162,7 @@ void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
     int current_time;
     uint32_t offset = 0;
     uint32_t sf_idx = 0;
+    uint32_t start_time, stop_time;
 
     // connect to flash device
     printstrln("Connecting to flash device...");
@@ -314,7 +315,7 @@ void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
                         //fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
                         //fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
                         //fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);                    
-                        #if 1
+                        #if 0
                         fl_readData(OFFSET_V090H000 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
                         fl_readData(OFFSET_V090H045 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
@@ -328,22 +329,35 @@ void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
                         break;
 
                     case load_SF_on_t0:
+                        //fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
+                        //fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
+                        //fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
+                        //fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);                    
+                        //audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, sf_idx);
+                        
+                        #if 1
                         fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
-                        fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
-                        fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
-                        fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);                    
-                        //audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, 1);
-                        #if 0
                         fl_readData(OFFSET_V090H000 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
+                        
+                        fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
                         fl_readData(OFFSET_V090H045 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
+                        
+                        fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
                         fl_readData(OFFSET_V090H090+ offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
+                        
+                        fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);
                         fl_readData(OFFSET_V090H135 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
+                        
+                        //tmr :> start_time;
+                        audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, sf_idx);
+                        //tmr :> stop_time;
+                        //printhex(stop_time - start_time);
                         #endif
-                        g_fread_state = load_SF_on_t1;
+                        g_fread_state = load_SF_on_t1; //idle; //load_SF_on_t1;
                         break;
 
                     default:
@@ -358,17 +372,16 @@ void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
                 g_fread_state = reconnect;
                 break;  // case c_x_tile
             
-            case c_chg_sf :> int tmp:
-                audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, tmp);
-                //c_chg_sf <: 1;
-                break;  // case c_chg_sf
+//            case c_chg_sf :> int tmp:
+//                audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, tmp);
+//                break;  // case c_chg_sf
 
             case c_flash_rd_req :> int tmp:
                 sf_idx = tmp;
                 if (g_fread_state == idle) {
                     //printstrln("idle");
                     //g_fread_state = read_h180;
-                    offset = tmp * SF_SIZE_TOTAL;   // offset position for each sound field    
+                    offset = tmp * SF_SIZE_TOTAL;   // offset position for each sound field                        
                     g_fread_state = load_SF_on_t0;
                 }
                 break;  // case c_flash_read_req
@@ -388,15 +401,16 @@ typedef enum {
     sf_total_states
 } e_sf_status;
 
-void button_task(chanend c_button, chanend c_flash_rd_req)
+void button_task(chanend c_button)
 {
     int current_val = 0, last_val = 0;
     int button_pressed = 0;
     e_sf_status status = sf_game;
     timer tmr;
-    const unsigned debounce_delay_ms = 200;
+    const unsigned debounce_delay_ms = 100;
     unsigned debounce_timeout;
     int current_time;
+    uint32_t tmp = 0;
     
     //audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
     
@@ -421,26 +435,25 @@ void button_task(chanend c_button, chanend c_flash_rd_req)
                             
                             status++;
                             if (status >= sf_total_states) status = sf_game;
-                            //read sound field
-                            c_flash_rd_req <: status;
-
-                            c_button <: status; //((current_val >> 5) & 0x01);
                             
-                            p_leds <: ( (~(status << LED_R)) & LED_MASK );
+                            c_button <: status; //((current_val >> 5) & 0x01);
 
+                            //read sound field
+                            //c_flash_rd_req <: status;
+                            p_leds <: ( (~(status << LED_R)) & LED_MASK );
                         }
                     } else {
                         //printf("Button pressed\n");
-//                        if (g_audio_stream_started < 0x08)
+                        if (g_audio_stream_started < 0x08)
                             button_pressed = 1;
-//                        printhex(g_audio_stream_started);
+                        printhex(g_audio_stream_started);
                         //button pressed
                         //button_response();
                         //c_button <: g_Ex3dSfIdx;
                     }
                 }
                 tmr :> current_time;
-                debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
+                debounce_timeout = current_time + (debounce_delay_ms * 100000/*XS1_TIMER_HZ*/);
                 last_val = current_val;
 //                }
                 break;
@@ -543,9 +556,10 @@ void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1)
 #endif
 
 //task to call C
-void dsp_task(chanend c_dsp, chanend c_button, chanend c_x_tile, chanend c_ex3d_started, chanend c_chg_sf)
+void dsp_task(chanend c_dsp, chanend c_button, chanend c_x_tile, chanend c_ex3d_started, chanend c_chg_sf, chanend c_flash_rd_req)
 {
     int bank, button, led_status, sf_changed = 0, load_SF_status = 0, sf_idx = 0;
+    int sync_t0 = 0;
 //    timer tmr;
 //    uint32_t start_time, end_time, elapsed_time;
 #if defined(MEASURE_ELAPSED_TIME) && !defined(USE_OS)
@@ -620,7 +634,7 @@ void dsp_task(chanend c_dsp, chanend c_button, chanend c_x_tile, chanend c_ex3d_
                 switch (load_SF_status) {
                     case 0:
                         get_soundField_000(c_chg_sf);
-                        load_SF_status = 1;
+                        load_SF_status = 1;                            
                         break;
                     case 1:
                         get_soundField_045(c_chg_sf);
@@ -633,14 +647,21 @@ void dsp_task(chanend c_dsp, chanend c_button, chanend c_x_tile, chanend c_ex3d_
                     case 3:
                         get_soundField_135(c_chg_sf);
                         load_SF_status = 4;
-                        //button_task_in_c(sf_idx, c_chg_sf);
                         break;
                     case 4:
-                        c_chg_sf <: sf_idx;
-                        //c_chg_sf :> tmp;
-                        sf_changed = 0;
-                        load_SF_status = 0;
                         button_task_in_c(sf_idx, c_chg_sf);
+                        load_SF_status = 5;                        
+                        break;
+
+                    case 5:
+                        //c_chg_sf <: sf_idx;
+                        //c_chg_sf :> tmp;
+                        sync_t0++;
+                        if (sync_t0 > 50) {
+                            sync_t0 = 0;
+                            sf_changed = 0;
+                            load_SF_status = 0;    
+                        }
                     default:
                         break;
                 }
@@ -648,17 +669,12 @@ void dsp_task(chanend c_dsp, chanend c_button, chanend c_x_tile, chanend c_ex3d_
             break;
 
         case c_button :> button:
-//            tmr :> start_time;
-            //get_soundField_from_tile0(c_chg_sf);
-//            tmr :> end_time;
-//            elapsed_time = end_time - start_time;
-//            printhex(elapsed_time);
-            //led_status = button_task_in_c(button, c_chg_sf);            
-            //c_led <: (led_status & 0x03);
+//            c_button <: sf_changed;
             if (sf_changed == 0) {
+                sf_idx = button;
+                c_flash_rd_req <: sf_idx;
                 sf_changed = 1;
                 load_SF_status = 0;
-                sf_idx = button;
             }
             break;
         }

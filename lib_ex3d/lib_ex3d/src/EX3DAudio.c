@@ -64,9 +64,9 @@ int EX3DConv_Open(	DWORD dwTileNum,
 int EX3DConv_SetSoundField(DWORD dwTileNum, DWORD dwChannels, PCHAR pszSFName)
 {
 	int RetCode = NO_ERR;
-
+	CDSConvolutionReverbClearEX3DSoundFieldsBuffer();
 	//RetCode = CDSConvolutionReverbClose();
-	CDSConvolutionReverbPrepareEX3DSoundFields();
+//	CDSConvolutionReverbPrepareEX3DSoundFields();
 	//RetCode = CDSConvolutionReverbOpen(dwChannels, 0, pszSFName, false);
 	RetCode = CDSConvolutionSetSoundField(pszSFName);
 	//DSTRACE(("[EX3DAudio_SetSoundField(), %d] Leaving...\n\r", RetCode));
