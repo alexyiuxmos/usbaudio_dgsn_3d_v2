@@ -70,8 +70,9 @@ XCC_FLAGS_2AMi4o8xxxxxx_ex3d = $(BUILD_FLAGS)   -DUSE_EX3D=1 \
                                                 -DNUM_USB_CHAN_OUT=8 \
                                                 -DNUM_USB_CHAN_IN=4 \
                                                 -DI2S_CHANS_DAC=2 \
-                                                -DI2S_CHANS_ADC=2 \
-                                                -DMAX_FREQ=48000
+                                                -DI2S_CHANS_ADC=0 \
+                                                -DMAX_FREQ=48000 \
+                                                -DFLASH_READ
 
 
 # Audio Class 2, Async, I2S Master, 8xInput, 8xOutput, Mixer

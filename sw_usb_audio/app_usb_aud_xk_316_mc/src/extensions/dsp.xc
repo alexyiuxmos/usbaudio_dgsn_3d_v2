@@ -88,9 +88,9 @@ extern "C" {
 on tile[0]: in port p_buttons = XS1_PORT_4E;
 #define BUTTON_PIN 0b00000001
 on tile[0]: out port p_leds = XS1_PORT_4F;
-#define LED_R 2
+#define LED_R 0 //2
 #define LED_G 3
-#define LED_MASK 0b00001100
+#define LED_MASK 0b00000011
 
 on tile[0]: fl_QSPIPorts p_qspi =
 {
@@ -109,7 +109,7 @@ static const fl_QuadDeviceSpec deviceSpec =
     0x9F,                   /* QSPI_RDID */
     0,                      /* id dummy bytes */
     3,                      /* id size in bytes */
-    0xEF6017, //0xBA6016,               /* device id */
+    0xEF4016, //0xEF6017, //0xBA6016,               /* device id */
     0x20,                   /* QSPI_SE */
     4096,                   /* Sector erase is always 4KB */
     0x06,                   /* QSPI_WREN */
@@ -443,9 +443,9 @@ void button_task(chanend c_button)
                         }
                     } else {
                         //printf("Button pressed\n");
-                        if (g_audio_stream_started < 0x08)
+//                        if (g_audio_stream_started < 0x08)
                             button_pressed = 1;
-                        printhex(g_audio_stream_started);
+//                        printhex(g_audio_stream_started);
                         //button pressed
                         //button_response();
                         //c_button <: g_Ex3dSfIdx;
