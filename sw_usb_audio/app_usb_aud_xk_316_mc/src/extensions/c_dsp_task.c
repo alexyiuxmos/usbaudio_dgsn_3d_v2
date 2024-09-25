@@ -175,6 +175,9 @@ void UserBufferManagementInit(unsigned sampFreq)
 
 int button_task_in_c(int button, chanend_t c_chg_sf)
 {
+
+    audio_ex3d_set_sf(button);       //set sound field
+#if 0
     int led = 0;
 
     if(button != 7) debug_printf("button:%d\n\r", button);
@@ -197,6 +200,7 @@ int button_task_in_c(int button, chanend_t c_chg_sf)
     led |= (bEX3D_On) | (((g_Ex3dSfIdx + 1) << 1) & 0x06);
 
     return led;
+#endif
 }
 
 void dsp_task_in_c(int bank, int sf_changed)

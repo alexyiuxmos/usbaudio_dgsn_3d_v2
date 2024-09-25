@@ -414,7 +414,7 @@ void button_task(chanend c_button)
     //audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
     
     //sf_game mode on
-    p_leds <: ( (~(status << LED_R)) & LED_MASK );
+    p_leds <: ( ((status << LED_R)) & LED_MASK );
     tmr :> current_time;
     debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
     //p_buttons :> current_val;
@@ -439,7 +439,7 @@ void button_task(chanend c_button)
 
                             //read sound field
                             //c_flash_rd_req <: status;
-                            p_leds <: ( (~(status << LED_R)) & LED_MASK );
+                            p_leds <: ( ((status << LED_R)) & LED_MASK );
                         }
                     } else {
                         //printf("Button pressed\n");
