@@ -347,7 +347,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                                 sample);
                     }
 #else
-                    samplesIn[buffIndex][chanIndex] = sample;
+                    samplesIn[buffIndex][chanIndex+NUM_USB_CHAN_IN-I2S_CHANS_ADC] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) */
                 }
 #endif
@@ -487,7 +487,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                                 sample);
                     }
 #else
-                    samplesIn[buffIndex][chanIndex] = sample;
+                    samplesIn[buffIndex][chanIndex+NUM_USB_CHAN_IN-I2S_CHANS_ADC] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
                 }
 #endif

@@ -406,7 +406,7 @@ void button_task(chanend c_button)
     int button_pressed = 0;
     e_sf_status status = sf_game;
     timer tmr;
-    const unsigned debounce_delay_ms = 100;
+    const unsigned debounce_delay_ms = 20;
     unsigned debounce_timeout;
     int current_time;
     uint32_t tmp = 0;
