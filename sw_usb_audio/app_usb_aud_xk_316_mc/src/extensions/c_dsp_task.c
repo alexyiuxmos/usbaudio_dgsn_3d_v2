@@ -205,10 +205,16 @@ int button_task_in_c(int button, chanend_t c_chg_sf)
 
 void dsp_task_in_c(int bank, int sf_changed)
 {
+    int test = 0;
 #if 1
     //Use audio data frame here
     if (sf_changed == 0) {
         EX3DAudio_ProcessAudioData((PBYTE)&usb_to_dsp_buf[bank][0][0], (PBYTE)&dsp_to_usb_buf[bank][0][0], NUM_USB_CHAN_OUT * FRAME_SIZE * sizeof(AUDIO_T), 0);        
+        test = test ^ 0x0f;
+        for (int i = 0; i < 1; i++) {
+            dsp_to_usb_buf[bank][0][i] = test;
+            dsp_to_usb_buf[bank][1][i] = test;
+        }
     } else {
         #if 0
         // loading the sound field; mute audio output

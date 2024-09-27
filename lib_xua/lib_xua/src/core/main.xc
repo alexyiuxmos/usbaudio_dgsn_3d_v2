@@ -706,6 +706,7 @@ int main()
 
         on tile[AUDIO_IO_TILE]:
         {
+            set_core_high_priority_on();
             /* Audio I/O task, includes mixing etc */
             usb_audio_io(c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)

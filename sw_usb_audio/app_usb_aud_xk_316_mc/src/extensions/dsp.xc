@@ -384,22 +384,22 @@ void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
 //                    g_fread_state = load_SF_on_t0;
 //                }
 
-                        fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
                         fl_readData(OFFSET_V090H000 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
                         
-                        fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
                         fl_readData(OFFSET_V090H045 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
+                        send_soundField_to_tile1(c_chg_sf);                        
                         
-                        fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
                         fl_readData(OFFSET_V090H090+ offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
-                        
-                        fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);
+                                                
                         fl_readData(OFFSET_V090H135 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
                         send_soundField_to_tile1(c_chg_sf);
                         
+                        fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
+                        fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
+                        fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
+                        fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);
                         //tmr :> start_time;
                         audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, sf_idx);
                 break;  // case c_flash_read_req
@@ -593,6 +593,7 @@ void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1)
 void load_SF_task(chanend c_load_SF, chanend c_chg_sf)
 {
     uint32_t sf_idx = 0;
+    set_core_high_priority_on();
     while (1) {
         select {
             case c_load_SF :> sf_idx:
@@ -651,7 +652,7 @@ void dsp_task(chanend c_dsp, chanend c_button, chanend c_x_tile, chanend c_ex3d_
             dsp_task_in_c(bank, sf_changed);   //do signal processing in C
             if (sf_changed) {
                 sync_t0++;
-                if (sync_t0 > 200) {
+                if (sync_t0 > 100) {
                     sync_t0 = 0;
                     sf_changed = 0;
                 }
