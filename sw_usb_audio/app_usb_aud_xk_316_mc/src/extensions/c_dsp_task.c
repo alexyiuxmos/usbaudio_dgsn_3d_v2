@@ -46,9 +46,7 @@ void send_soundField_to_tile1(chanend_t c_copy2tile0)
 {
 #ifdef FLASH_READ
     chan_out_word(c_copy2tile0, 1); // sync
-    for (int i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        //chanend_out_word(c_copy2tile0, exir2k_xmos_wm_posData_v090h045[i]);
-        //chanend_out_word(c_copy2tile0, exir2k_xmos_game_wm_posData_v090h000[i]);
+    for (int i = 0; i< SF_SIZE_PER_ANGLE; i++) {       
         chanend_out_word(c_copy2tile0, exir2k_xmos_game_wm_posData_lfe[i]);
     }
     return;
@@ -110,55 +108,26 @@ void get_soundField_from_tile0(chanend_t c_copy_from_tile1)
     uint32_t tmp;
     int i;
 #ifdef FLASH_READ
-#if 0    
-    tmp = chan_in_word(c_copy_from_tile1);
-    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        exir2k_xmos_game_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
-    }
-    //debug_printf("SF1\n");
-    tmp = chan_in_word(c_copy_from_tile1);
-    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        //exir2k_xmos_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
-        exir2k_xmos_game_wm_posData_v090h225[i] = chanend_in_word(c_copy_from_tile1);
-    }
-    //debug_printf("SF2\n");
-    tmp = chan_in_word(c_copy_from_tile1);
-    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        //exir2k_xmos_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
-        exir2k_xmos_game_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
-    }
-    //debug_printf("SF3\n");
-    tmp = chan_in_word(c_copy_from_tile1);
-    for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        //exir2k_xmos_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
-        exir2k_xmos_game_wm_posData_v090h315[i] = chanend_in_word(c_copy_from_tile1);
-    }
-    //debug_printf("SF4\n");
-#endif
 #if 1
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
         exir2k_xmos_game_wm_posData_v090h000[i] = chanend_in_word(c_copy_from_tile1);
     }
-    //debug_printf("SF5\n");
+    
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        //exir2k_xmos_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h045[i] = chanend_in_word(c_copy_from_tile1);
     }
-    //debug_printf("SF6\n");
+    
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        //exir2k_xmos_wm_posData_v090h180[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h090[i] = chanend_in_word(c_copy_from_tile1);
     }
-    //debug_printf("SF7\n");
+    
     tmp = chan_in_word(c_copy_from_tile1);
     for (i = 0; i< SF_SIZE_PER_ANGLE; i++) {
-        //exir2k_xmos_wm_posData_v090h270[i] = chanend_in_word(c_copy_from_tile1);
         exir2k_xmos_game_wm_posData_v090h135[i] = chanend_in_word(c_copy_from_tile1);
     }
-    //debug_printf("SF8\n");
 #endif
 
 #else
@@ -205,36 +174,15 @@ int button_task_in_c(int button, chanend_t c_chg_sf)
 
 void dsp_task_in_c(int bank, int sf_changed)
 {
-    int test = 0;
 #if 1
     //Use audio data frame here
     if (sf_changed == 0) {
         EX3DAudio_ProcessAudioData((PBYTE)&usb_to_dsp_buf[bank][0][0], (PBYTE)&dsp_to_usb_buf[bank][0][0], NUM_USB_CHAN_OUT * FRAME_SIZE * sizeof(AUDIO_T), 0);        
-        test = test ^ 0x0f;
-        for (int i = 0; i < 1; i++) {
-            dsp_to_usb_buf[bank][0][i] = test;
-            dsp_to_usb_buf[bank][1][i] = test;
-        }
     } else {
-        #if 0
-        // loading the sound field; mute audio output
-        for (int i = 0; i < FRAME_SIZE; i++) {
-            usb_to_dsp_buf[bank][0][i] = 0;
-            usb_to_dsp_buf[bank][1][i] = 0;
-            usb_to_dsp_buf[bank][2][i] = 0;
-            usb_to_dsp_buf[bank][3][i] = 0;
-            usb_to_dsp_buf[bank][4][i] = 0;
-            usb_to_dsp_buf[bank][5][i] = 0;
-            usb_to_dsp_buf[bank][6][i] = 0;
-            usb_to_dsp_buf[bank][7][i] = 0;
-        }
-        EX3DAudio_ProcessAudioData((PBYTE)&usb_to_dsp_buf[bank][0][0], (PBYTE)&dsp_to_usb_buf[bank][0][0], NUM_USB_CHAN_OUT * FRAME_SIZE * sizeof(AUDIO_T), 0);        
-        #endif
         for (int i = 0; i < FRAME_SIZE; i++) {
             dsp_to_usb_buf[bank][0][i] = 0;
             dsp_to_usb_buf[bank][1][i] = 0;
         }
-        //audio_ex3d_task();
     }
         
     //audio_ex3d_task();

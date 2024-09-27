@@ -171,10 +171,6 @@ void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
         return;
     }
     // debug;; tile 0
-    //fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000);
-    //fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h045);
-    //fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h090);
-    //fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h135);
     fl_readData(OFFSET_V090H180+offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
     fl_readData(OFFSET_V090H225+offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
     fl_readData(OFFSET_V090H270+offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
@@ -198,185 +194,6 @@ void flash_read_task(chanend c_x_tile, chanend c_flash_rd_req, chanend c_chg_sf)
 
     while (1) {
         select {
-#if 0
-            case tmr when timerafter(timeout) :> void:
-                switch (g_fread_state) {
-                    case reconnect:
-                        if (fl_connectToDevice(p_qspi, &deviceSpec, 1) != 0) {
-                            printstrln("fl_connectToDevice failed");
-                            break;
-                        }
-                        g_fread_state = read_h180;
-                        break;
-
-                    case read_h180:
-                        if (fl_readData(OFFSET_V090H180, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        //send_soundField_to_tile1(c_x_tile);
-                        g_fread_state = read_h225;
-                        printstrln("read_h180");
-                        break;
-                    
-                    case read_h225:
-                        if (fl_readData(OFFSET_V090H225, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        //send_soundField_to_tile1(c_x_tile);
-                        g_fread_state = read_h270;
-                        printstrln("read_h225");
-                        break;
-                    
-                    case read_h270:
-                        if (fl_readData(OFFSET_V090H270, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        //send_soundField_to_tile1(c_x_tile);
-                        g_fread_state = read_h315;
-                        printstrln("read_h270");                    
-                        break;
-
-                    case read_h315:
-                        if (fl_readData(OFFSET_V090H315, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        //send_soundField_to_tile1(c_x_tile);
-                        g_fread_state = read_h000;
-                        printstrln("read_h315");                        
-                        break;
-
-                    case read_h000:
-                        //if (fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h000) != 0) {
-                        if (fl_readData(OFFSET_V090H000, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        //printstrln("read_h000");
-                        send_soundField_to_tile1(c_chg_sf);
-                        g_fread_state = read_h045;                        
-                        break;
-
-                    case read_h045:
-                        //if (fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h045) != 0) {
-                        if (fl_readData(OFFSET_V090H045, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        //printstrln("read_h045");
-                        send_soundField_to_tile1(c_chg_sf);
-                        g_fread_state = read_h090;
-                        break;
-
-                    case read_h090:
-                        //if (fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h090) != 0) {
-                        if (fl_readData(OFFSET_V090H090, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        //printstrln("read_h090");
-                        send_soundField_to_tile1(c_chg_sf);
-                        g_fread_state = read_h135;                        
-                        break;
-
-                    case read_h135:
-                        //if (fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h135) != 0) {
-                        if (fl_readData(OFFSET_V090H135, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }                        
-                        send_soundField_to_tile1(c_chg_sf);
-                        //printstrln("read_h135");
-                        //g_fread_state = read_lfe;                        
-                        g_fread_state = idle;
-                        break;
-
-                    case read_lfe:
-                        if (fl_readData(OFFSET_LFE, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe) != 0) {
-                            printstrln("fl_readData failed");
-                            break;
-                        }
-                        printstrln("read_lfe");
-                        g_fread_state = idle; //read_disconnect;                        
-                        break;
-
-                    case read_disconnect:
-                        fl_disconnect();
-                        g_fread_state = idle;
-                        break;
-
-                    case idle:
-                        break;
-                    
-                    case load_SF_on_t1:
-                        //fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
-                        //fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
-                        //fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
-                        //fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);                    
-                        #if 0
-                        fl_readData(OFFSET_V090H000 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        fl_readData(OFFSET_V090H045 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        fl_readData(OFFSET_V090H090 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        fl_readData(OFFSET_V090H135 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        #endif
-                        g_fread_state = idle;
-                        break;
-
-                    case load_SF_on_t0:
-                        //fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
-                        //fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
-                        //fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
-                        //fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);                    
-                        //audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, sf_idx);
-                        
-                        #if 1
-                        fl_readData(OFFSET_V090H180 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h180);
-                        fl_readData(OFFSET_V090H000 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        
-                        fl_readData(OFFSET_V090H225 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h225);
-                        fl_readData(OFFSET_V090H045 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        
-                        fl_readData(OFFSET_V090H270 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h270);
-                        fl_readData(OFFSET_V090H090+ offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        
-                        fl_readData(OFFSET_V090H315 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_v090h315);
-                        fl_readData(OFFSET_V090H135 + offset, SF_SIZE_PER_ANGLE, exir2k_xmos_game_wm_posData_lfe);
-                        send_soundField_to_tile1(c_chg_sf);
-                        
-                        //tmr :> start_time;
-                        audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, sf_idx);
-                        //tmr :> stop_time;
-                        //printhex(stop_time - start_time);
-                        #endif
-                        g_fread_state = load_SF_on_t1; //idle; //load_SF_on_t1;
-                        break;
-
-                    default:
-                        break;
-                }
-                //tmr :> current_time;
-                //timeout = current_time + (FLASH_READ_POLLING_PERIOD);
-                break;  // case tmr
-            
-            case c_x_tile :> int tmp:
-                // sound field changed and read SF from flash
-                g_fread_state = reconnect;
-                break;  // case c_x_tile
-#endif            
-//            case c_chg_sf :> int tmp:
-//                audio_ex3d_conv_setSF(1, NUM_USB_CHAN_OUT, tmp);
-//                break;  // case c_chg_sf
-
             case c_flash_rd_req :> int tmp:
                 sf_idx = tmp;
 //                if (g_fread_state == idle) {
@@ -446,8 +263,6 @@ void button_task(chanend c_button)
                 current_val = current_val & BUTTON_PIN;
                 if (current_val != last_val) { // pin changed
                     if ((current_val & BUTTON_PIN) == BUTTON_PIN) {
-                        //printf("Button released\n");
-                        //printhex(current_val);
                         if (button_pressed == 1) {
                             button_pressed = 0; //button is released
                             
@@ -461,13 +276,7 @@ void button_task(chanend c_button)
                             p_leds <: ( ((status << LED_R)) & LED_MASK );
                         }
                     } else {
-                        //printf("Button pressed\n");
-//                        if (g_audio_stream_started < 0x08)
-                            button_pressed = 1;
-//                        printhex(g_audio_stream_started);
-                        //button pressed
-                        //button_response();
-                        //c_button <: g_Ex3dSfIdx;
+                        button_pressed = 1;
                     }
                 }
                 tmr :> current_time;
