@@ -262,6 +262,7 @@ extern void get_soundField_from_tile0(chanend c_copy_from_tile1);
 extern void ex3d_task(chanend c_ex3d_started, chanend c_x_tile);
 extern void convolution_task_main_tile(chanend c_main_tile_to_sub_tile1);
 extern void convolution_task_sub_tile1(chanend c_main_tile_to_sub_tile1);
+extern void load_SF_task(chanend c_load_SF, chanend c_chg_sf);
     #endif
 #endif
 #if (DSP_TASK == 1)
@@ -560,6 +561,7 @@ int main()
     chan c_flash_rd_req;
     chan c_main_tile_to_sub_tile1;
     chan c_x_tile;
+    chan c_load_SF;
 #endif
 #endif
 
@@ -682,13 +684,14 @@ int main()
 //        }
         on tile[0]: convolution_task_sub_tile1(c_main_tile_to_sub_tile1);
 
-        on tile[AUDIO_IO_TILE]: dsp_task(c_dsp, c_button, c_led, c_ex3d_started, c_chg_sf, c_flash_rd_req);
+        on tile[AUDIO_IO_TILE]: dsp_task(c_dsp, c_button, c_led, c_ex3d_started, c_load_SF/*c_chg_sf*/, c_flash_rd_req);
     #if defined(USE_OS)
         on tile[AUDIO_IO_TILE]: 
         {   
             ex3d_task(c_ex3d_started, c_x_tile);
         }
         on tile[AUDIO_IO_TILE]: convolution_task_main_tile(c_main_tile_to_sub_tile1);
+        on tile[AUDIO_IO_TILE]: load_SF_task(c_load_SF, c_chg_sf);
     #endif
 #endif
 #if (DSP_TASK == 1)
