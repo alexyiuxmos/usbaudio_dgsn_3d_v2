@@ -20,16 +20,27 @@ static unsigned     HidFindSetIdleActivationPoint( const unsigned currentPeriod,
 static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t &sp );
 static unsigned     HidTimeDiff( const unsigned earlierTime, const unsigned laterTime );
 
+unsigned char hid_buffer[8] = {0};
 XUD_Result_t HidInterfaceClassRequests(
   XUD_ep c_ep0_out,
   XUD_ep c_ep0_in,
   USB_SetupPacket_t &sp )
 {
   XUD_Result_t result = XUD_RES_ERR;
+  unsigned datalength;
+  unsigned char hid_buffer[8] = {0};
 
   switch ( sp.bRequest ) {
     case HID_SET_IDLE:
       result = HidProcessSetIdleRequest( c_ep0_out, c_ep0_in, sp );
+      break;
+    
+    case HID_SET_REPORT:
+      if ((result = XUD_GetBuffer(c_ep0_out, (hid_buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
+      {
+        return result;
+      }
+      XUD_DoSetRequestStatus(c_ep0_in);
       break;
 
     default:

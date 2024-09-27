@@ -17,6 +17,7 @@ extern "C" {
 
 int bank=0;
 int samp_idx=0;
+uint32_t ex3d_proc_output[2];
 #endif
 
 #pragma unsafe arrays
@@ -76,7 +77,8 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
 #if defined(AUDIO_T_16)
             for(int ch = 0; ch < 2; ch++) {
                 usb_to_dsp_buf[bank][ch][samp_idx] = (AUDIO_T)(samplesOut[ch] / 65536);
-                samplesIn[readBuffNo][ch] = ((int32_t)dsp_to_usb_buf[bank][ch][samp_idx]) * 65536;
+                //samplesIn[readBuffNo][ch] = ((int32_t)dsp_to_usb_buf[bank][ch][samp_idx]) * 65536;
+                ex3d_proc_output[ch] = ((int32_t)dsp_to_usb_buf[bank][ch][samp_idx]) * 65536;
 #if (USE_LOOPBACK_TEST == 1)
                 samplesIn[readBuffNo][ch] = ((int32_t)dsp_to_usb_buf[bank][ch][samp_idx]) * 65536;
 #endif

@@ -347,7 +347,8 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                                 sample);
                     }
 #else
-                    samplesIn[buffIndex][chanIndex+NUM_USB_CHAN_IN-I2S_CHANS_ADC] = sample;
+                    /*samplesIn[buffIndex][chanIndex+NUM_USB_CHAN_IN-I2S_CHANS_ADC] = sample;*/
+                    samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) */
                 }
 #endif
@@ -379,8 +380,9 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #endif /* (AUD_TO_USB_RATIO > 1) */
                     if(XUA_I2S_N_BITS == 32)
 #if defined(USE_EX3D)
-                        p_i2s_dac[index++] <: bitrev(samplesIn[readBuffNo][frameCount]);
+                        //p_i2s_dac[index++] <: bitrev(samplesIn[readBuffNo][frameCount]);
                         //p_i2s_dac[index++] <: bitrev(samplesOut[frameCount]);   // 4 DAC outputs equally
+                        p_i2s_dac[index++] <: bitrev(ex3d_proc_output[frameCount + i]);
 #else
                         p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
 #endif
@@ -487,7 +489,8 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                                 sample);
                     }
 #else
-                    samplesIn[buffIndex][chanIndex+NUM_USB_CHAN_IN-I2S_CHANS_ADC] = sample;
+                    /*samplesIn[buffIndex][chanIndex+NUM_USB_CHAN_IN-I2S_CHANS_ADC] = sample;*/
+                    samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
                 }
 #endif
@@ -517,8 +520,9 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #endif /* (AUD_TO_USB_RATIO > 1) */
                     if(XUA_I2S_N_BITS == 32)
 #if defined(USE_EX3D)
-                        p_i2s_dac[index++] <: bitrev(samplesIn[readBuffNo][frameCount]);
+                        //p_i2s_dac[index++] <: bitrev(samplesIn[readBuffNo][frameCount]);
                         //p_i2s_dac[index++] <: bitrev(samplesOut[frameCount]);   // 4 DAC outputs equally
+                        p_i2s_dac[index++] <: bitrev(ex3d_proc_output[frameCount + i]);
 #else
                         p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
 #endif
