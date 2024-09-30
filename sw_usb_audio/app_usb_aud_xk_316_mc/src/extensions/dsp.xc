@@ -12,7 +12,7 @@
 #include "print.h"
 
 #include <quadflashlib.h>
-
+#include "xc_ptr.h"
 #define MEASURE_ELAPSED_TIME
 
 /* Write HID Report Data into hidData array
@@ -88,10 +88,10 @@ extern "C" {
 
 on tile[0]: in port p_buttons = XS1_PORT_4E;
 #define BUTTON_PIN 0b00000001
-//on tile[0]: out port p_leds = XS1_PORT_4F;
-//#define LED_R 0 //2
-//#define LED_G 3
-//#define LED_MASK 0b00000011
+on tile[0]: out port p_leds = XS1_PORT_4F;
+#define LED_R 0 //2
+#define LED_G 3
+#define LED_MASK 0b00000011
 
 on tile[0]: fl_QSPIPorts p_qspi =
 {
@@ -236,6 +236,8 @@ typedef enum {
     sf_total_states
 } e_sf_status;
 
+extern unsigned char g_hid_data;
+
 void button_task(chanend c_button)
 {
     int current_val = 0, last_val = 0;
@@ -246,11 +248,12 @@ void button_task(chanend c_button)
     unsigned debounce_timeout;
     int current_time;
     uint32_t tmp = 0;
+    unsigned char hid_data = 0, last_hid = 0;
     
     //audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
     
     //sf_game mode on
-//    p_leds <: ( ((status << LED_R)) & LED_MASK );
+    p_leds <: ( ((status << LED_R)) & LED_MASK );
     tmr :> current_time;
     debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
     //p_buttons :> current_val;
@@ -273,11 +276,25 @@ void button_task(chanend c_button)
 
                             //read sound field
                             //c_flash_rd_req <: status;
-//                            p_leds <: ( ((status << LED_R)) & LED_MASK );
+                            p_leds <: ( ((status << LED_R)) & LED_MASK );
                         }
                     } else {
                         button_pressed = 1;
                     }
+                } else {
+                    // check hid data
+#if 1
+                    GET_SHARED_GLOBAL(hid_data, g_hid_data);
+                    if (last_hid != hid_data) {
+                        printhex(hid_data);                        
+                        if (hid_data < sf_total_states) {
+                            last_hid = hid_data;
+                            status = hid_data;
+                            c_button <: status;
+                            p_leds <: ( ((status << LED_R)) & LED_MASK );
+                        }
+                    }
+#endif                    
                 }
                 tmr :> current_time;
                 debounce_timeout = current_time + (debounce_delay_ms * 100000/*XS1_TIMER_HZ*/);

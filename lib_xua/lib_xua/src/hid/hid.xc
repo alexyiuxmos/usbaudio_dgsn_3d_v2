@@ -8,6 +8,7 @@
 #include "xud_std_requests.h"
 #include "xua_hid.h"
 #include "xua_hid_report.h"
+#include "xc_ptr.h"
 
 #define DEBUG_UNIT HID_XC
 #define DEBUG_PRINT_ENABLE_HID_XC 0
@@ -20,7 +21,8 @@ static unsigned     HidFindSetIdleActivationPoint( const unsigned currentPeriod,
 static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t &sp );
 static unsigned     HidTimeDiff( const unsigned earlierTime, const unsigned laterTime );
 
-on tile[0]: out port p_leds = XS1_PORT_4F;
+//on tile[0]: out port p_leds = XS1_PORT_4F;
+unsigned char g_hid_data;
 
 XUD_Result_t HidInterfaceClassRequests(
   XUD_ep c_ep0_out,
@@ -41,7 +43,8 @@ XUD_Result_t HidInterfaceClassRequests(
       {
         return result;
       }
-      p_leds <: hid_buffer[1];
+//      p_leds <: hid_buffer[1];
+      SET_SHARED_GLOBAL(g_hid_data, hid_buffer[1]);
       XUD_DoSetRequestStatus(c_ep0_in);
       break;
 
