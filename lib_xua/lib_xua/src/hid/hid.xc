@@ -20,7 +20,8 @@ static unsigned     HidFindSetIdleActivationPoint( const unsigned currentPeriod,
 static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t &sp );
 static unsigned     HidTimeDiff( const unsigned earlierTime, const unsigned laterTime );
 
-unsigned char hid_buffer[8] = {0};
+on tile[0]: out port p_leds = XS1_PORT_4F;
+
 XUD_Result_t HidInterfaceClassRequests(
   XUD_ep c_ep0_out,
   XUD_ep c_ep0_in,
@@ -40,6 +41,7 @@ XUD_Result_t HidInterfaceClassRequests(
       {
         return result;
       }
+      p_leds <: hid_buffer[1];
       XUD_DoSetRequestStatus(c_ep0_in);
       break;
 

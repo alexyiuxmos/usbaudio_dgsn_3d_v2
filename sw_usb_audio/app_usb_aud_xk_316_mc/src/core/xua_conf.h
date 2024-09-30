@@ -156,7 +156,7 @@
 #endif
 
 #if defined(USE_EX3D)
-#define HID_OUT_REQUIRED   1
+#define HID_OUT_REQUIRED   0//1
 // #define XUA_DFU_EN      0
 #endif
 

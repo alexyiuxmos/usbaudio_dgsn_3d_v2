@@ -88,10 +88,10 @@ extern "C" {
 
 on tile[0]: in port p_buttons = XS1_PORT_4E;
 #define BUTTON_PIN 0b00000001
-on tile[0]: out port p_leds = XS1_PORT_4F;
-#define LED_R 0 //2
-#define LED_G 3
-#define LED_MASK 0b00000011
+//on tile[0]: out port p_leds = XS1_PORT_4F;
+//#define LED_R 0 //2
+//#define LED_G 3
+//#define LED_MASK 0b00000011
 
 on tile[0]: fl_QSPIPorts p_qspi =
 {
@@ -250,7 +250,7 @@ void button_task(chanend c_button)
     //audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
     
     //sf_game mode on
-    p_leds <: ( ((status << LED_R)) & LED_MASK );
+//    p_leds <: ( ((status << LED_R)) & LED_MASK );
     tmr :> current_time;
     debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
     //p_buttons :> current_val;
@@ -273,7 +273,7 @@ void button_task(chanend c_button)
 
                             //read sound field
                             //c_flash_rd_req <: status;
-                            p_leds <: ( ((status << LED_R)) & LED_MASK );
+//                            p_leds <: ( ((status << LED_R)) & LED_MASK );
                         }
                     } else {
                         button_pressed = 1;
