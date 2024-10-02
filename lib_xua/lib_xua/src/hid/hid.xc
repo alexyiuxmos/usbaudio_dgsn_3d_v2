@@ -44,7 +44,7 @@ XUD_Result_t HidInterfaceClassRequests(
         return result;
       }
 //      p_leds <: hid_buffer[1];
-      SET_SHARED_GLOBAL(g_hid_data, hid_buffer[1]);
+      SET_SHARED_GLOBAL(g_hid_data, hid_buffer[0]);
       XUD_DoSetRequestStatus(c_ep0_in);
       break;
 

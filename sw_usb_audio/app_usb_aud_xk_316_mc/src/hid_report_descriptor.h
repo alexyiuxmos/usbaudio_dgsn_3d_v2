@@ -45,6 +45,12 @@ static const USB_HID_Short_Item_t hidInputConstArray        = {
 static const USB_HID_Short_Item_t hidInputDataVar           = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT),
     .data = { 0x02, 0x00 } };
+static const USB_HID_Short_Item_t hidOutputDataVar           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_OUTPUT),
+    .data = { 0x02, 0x00 } };
+static const USB_HID_Short_Item_t hidOutputConstArray        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_OUTPUT),
+    .data = { 0x01, 0x00 } };
 
 static const USB_HID_Short_Item_t hidLogicalMaximum0        = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM),
@@ -55,7 +61,13 @@ static const USB_HID_Short_Item_t hidLogicalMaximum1        = {
 static const USB_HID_Short_Item_t hidLogicalMinimum0        = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MINIMUM),
     .data = { 0x00, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMaximum0F        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM),
+    .data = { 0x0f, 0x00 } };
 
+static const USB_HID_Short_Item_t hidReportCount1          = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT),
+    .data = { 0x01, 0x00 } };
 static const USB_HID_Short_Item_t hidReportCount2           = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT),
     .data = { 0x02, 0x00 } };
@@ -65,10 +77,17 @@ static const USB_HID_Short_Item_t hidReportCount6           = {
 static const USB_HID_Short_Item_t hidReportSize1            = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_SIZE),
     .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidReportSize8            = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_SIZE),
+    .data = { 0x08, 0x00 } };
 
 static const USB_HID_Short_Item_t hidUsageConsumerControl   = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
     .data = { 0x01, 0x00 } };
+
+static const USB_HID_Short_Item_t hidUsageLED   = {     // BUG: potential bug
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .data = { 0x08, 0x00 } };
 
 /*
  * Define the HID Report Descriptor Item, Usage Page, Report ID and length for each HID Report
@@ -155,6 +174,13 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
         &hidLogicalMaximum0,
         &hidReportCount2,
         &hidInputConstArray,
+        // LED Output Report
+        &hidUsageLED,            //0x05, 0x08,        // Usage Page (LED)
+        &hidLogicalMinimum0,     //0x15, 0x00,        // Logical Minimum (0)
+        &hidLogicalMaximum0F,    //0x25, 0x0F,        // Logical Minimum (16) - 8 bits */
+        &hidReportSize8,         //0x75, 0x08,        // Report Size (8 bits)
+        &hidReportCount1,        //0x95, 0x01,        // Report Count (1)     
+        &hidOutputDataVar,       //0x91, 0x02,        // Output (Data, Var, Abs) - 1 byte for LED control
     &hidCollectionEnd
 };
 
