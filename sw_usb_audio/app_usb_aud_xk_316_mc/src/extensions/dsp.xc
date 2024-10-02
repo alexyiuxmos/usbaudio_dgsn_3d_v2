@@ -254,21 +254,62 @@ void button_task(chanend c_button)
     uint32_t tmp = 0;
     unsigned char hid_data = 0, last_hid = 0;
     unsigned char hidData = 0;
+    int is_stable = 1;
     
     //audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
     
     //sf_game mode on
     p_leds <: ( ((status << LED_R)) & LED_MASK );
     tmr :> current_time;
-    debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
+    debounce_timeout = current_time + (debounce_delay_ms * XS1_TIMER_KHZ);
     p_buttons :> current_val;
     last_val = current_val;
     while (1) {
-        select {        
-            case tmr when timerafter(debounce_timeout) :> void:
-                p_buttons :> current_val;
-                printhex(current_val);
+        select {  
+            case !is_stable => tmr when timerafter(debounce_timeout) :> void:
+                is_stable = 1;
+                break;
+
+            case is_stable => p_buttons when pinsneq(current_val) :> current_val: 
+                //printhex(current_val);
+                
+                is_stable = 0;
+                if (hidIsChangePending(0))
+                    continue;
+
+                if (current_val == 0x05) {
+                    hidData = HID_CONTROL_VOLUP;
+                    unsafe {
+                        volatile unsigned char * unsafe lastHidDataUnsafe = &lastHidData;
+                        *lastHidDataUnsafe = hidData;
+                        hidSetChangePending(0);
+                    }
+                } else {
+                    if (current_val == 0x06) {
+                        hidData = HID_CONTROL_VOLDN;
+                        unsafe {
+                            volatile unsigned char * unsafe lastHidDataUnsafe = &lastHidData;
+                            *lastHidDataUnsafe = hidData;
+                            hidSetChangePending(0);
+                        }
+                    } else {
+                        hidData = 0;
+                        unsafe {
+                            volatile unsigned char * unsafe lastHidDataUnsafe = &lastHidData;
+                            *lastHidDataUnsafe = hidData;
+                            hidSetChangePending(0);
+                        }
+                    }                    
+                }
+
+                tmr :> current_time;
+                debounce_timeout = current_time + (debounce_delay_ms * XS1_TIMER_KHZ);  
+                break;
+            
+            default:
+                break;
                 //current_val = current_val & (BUTTON_MASK);
+#if 0
 #if 0            
                 if (current_val != last_val) { // pin changed
                     pin_changed = ((current_val ^ last_val) /*& BUTTON_MASK*/);
@@ -389,8 +430,10 @@ printhex(VOLUP_BUTTON);
 #endif
 
                 tmr :> current_time;
-                debounce_timeout = current_time + (debounce_delay_ms * 100000/*XS1_TIMER_HZ*/);                
+                debounce_timeout = current_time + (debounce_delay_ms * 100000/*XS1_TIMER_HZ*/);   
+             
                 break;
+#endif
         }
     }
 }
