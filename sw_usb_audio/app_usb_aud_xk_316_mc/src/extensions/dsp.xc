@@ -13,6 +13,7 @@
 
 #include <quadflashlib.h>
 #include "xc_ptr.h"
+#include "timer.h"
 #define MEASURE_ELAPSED_TIME
 
 /* Write HID Report Data into hidData array
@@ -87,7 +88,10 @@ extern "C" {
 }
 
 on tile[0]: in port p_buttons = XS1_PORT_4E;
-#define BUTTON_PIN 0b00000001
+#define SF_BUTTON       0x04 //0b00000100
+#define VOLUP_BUTTON    0x02 //0b00000010
+#define VOLDOWN_BUTTON  0x01 //0b00000001
+#define BUTTON_MASK     SF_BUTTON | VOLUP_BUTTON | VOLDOWN_BUTTON
 on tile[0]: out port p_leds = XS1_PORT_4F;
 #define LED_R 0 //2
 #define LED_G 3
@@ -240,15 +244,16 @@ extern unsigned char g_hid_data;
 
 void button_task(chanend c_button)
 {
-    int current_val = 0, last_val = 0;
+    int current_val = 0, last_val = 0, pin_changed = 0;
     int button_pressed = 0;
     e_sf_status status = sf_game;
     timer tmr;
-    const unsigned debounce_delay_ms = 20;
-    unsigned debounce_timeout;
-    int current_time;
+    const unsigned debounce_delay_ms = 200;
+    uint32_t debounce_timeout;
+    uint32_t current_time;
     uint32_t tmp = 0;
     unsigned char hid_data = 0, last_hid = 0;
+    unsigned char hidData = 0;
     
     //audio_ex3d_conv_init(1, NUM_USB_CHAN_OUT);  // convolution_task_sub_tile1 �� ���� tile���� ����
     
@@ -256,26 +261,83 @@ void button_task(chanend c_button)
     p_leds <: ( ((status << LED_R)) & LED_MASK );
     tmr :> current_time;
     debounce_timeout = current_time + (debounce_delay_ms * 10000/*XS1_TIMER_HZ*/);
-    //p_buttons :> current_val;
-
+    p_buttons :> current_val;
+    last_val = current_val;
     while (1) {
         select {        
             case tmr when timerafter(debounce_timeout) :> void:
-//                if (g_audio_stream_started) {
                 p_buttons :> current_val;
-                current_val = current_val & BUTTON_PIN;
+                printhex(current_val);
+                //current_val = current_val & (BUTTON_MASK);
+#if 0            
                 if (current_val != last_val) { // pin changed
-                    if ((current_val & BUTTON_PIN) == BUTTON_PIN) {
-                        if (button_pressed == 1) {
-                            button_pressed = 0; //button is released
-                            
-                            status++;
-                            if (status >= sf_total_states) status = sf_game;
-                            
-                            c_button <: status; //((current_val >> 5) & 0x01);
+                    pin_changed = ((current_val ^ last_val) /*& BUTTON_MASK*/);
+printhex(current_val);
+printhex(last_val);
+printhex(pin_changed);
+                    if (pin_changed == VOLUP_BUTTON) {
+printhex(VOLUP_BUTTON);
+                        //if ( (current_val & VOLUP_BUTTON) == VOLUP_BUTTON ) {
+                        if (current_val == 0x05 ) {
+printhex(VOLUP_BUTTON);
+                            // released VOLUP_BUTTON
+                            if (hidIsChangePending(0))
+                                continue;
+                            hidData = HID_CONTROL_VOLUP;
+                            unsafe {
+                                volatile unsigned char * unsafe lastHidDataUnsafe = &lastHidData;
+                                *lastHidDataUnsafe = hidData;
+                                hidSetChangePending(0);
+                            }
+                        }
+                    } else {
+                        if (pin_changed == VOLDOWN_BUTTON) {
+                            if ( (current_val & VOLDOWN_BUTTON) == VOLDOWN_BUTTON ) {
+                                // released VOLDOWN_BUTTON
+                                if (hidIsChangePending(0))
+                                    continue;
+                                hidData = HID_CONTROL_VOLDN;
+                                unsafe {
+                                    volatile unsigned char * unsafe lastHidDataUnsafe = &lastHidData;
+                                    *lastHidDataUnsafe = hidData;
+                                    hidSetChangePending(0);
+                                }
+                            }
+                        } else {
+                            if (pin_changed == SF_BUTTON) {
+                                if ( (current_val & SF_BUTTON) == SF_BUTTON ) {
+                                    // released SF_BUTTON
+                                    status++;
+                                    if (status >= sf_total_states) status = sf_game;                            
+                                    //c_button <: status; //((current_val >> 5) & 0x01);
+                                    p_leds <: ( ((status << LED_R)) & LED_MASK );
+                                }                                
+                            }
+                        }
+                    }
+                }
+                last_val = current_val;
+                
+                GET_SHARED_GLOBAL(hid_data, g_hid_data);
+                if (last_hid != hid_data) {
+                    printhex(hid_data);                        
+                    if (hid_data < sf_total_states) {
+                        last_hid = hid_data;
+                        status = hid_data;
+                        c_button <: status;
+                        p_leds <: ( ((status << LED_R)) & LED_MASK );
+                    }
+                }                
 
-                            //read sound field
-                            //c_flash_rd_req <: status;
+#else
+                if (current_val != last_val) { // pin changed
+                    //if ((current_val & SF_BUTTON) == SF_BUTTON) {
+                    if ((current_val) == 0x03) {    
+                        if (button_pressed == 1) {
+                            button_pressed = 0; //button is released                            
+                            status++;
+                            if (status >= sf_total_states) status = sf_game;                            
+                            c_button <: status; //((current_val >> 5) & 0x01);
                             p_leds <: ( ((status << LED_R)) & LED_MASK );
                         }
                     } else {
@@ -283,7 +345,6 @@ void button_task(chanend c_button)
                     }
                 } else {
                     // check hid data
-#if 1
                     GET_SHARED_GLOBAL(hid_data, g_hid_data);
                     if (last_hid != hid_data) {
                         printhex(hid_data);                        
@@ -293,13 +354,42 @@ void button_task(chanend c_button)
                             c_button <: status;
                             p_leds <: ( ((status << LED_R)) & LED_MASK );
                         }
-                    }
-#endif                    
+                    }                    
                 }
-                tmr :> current_time;
-                debounce_timeout = current_time + (debounce_delay_ms * 100000/*XS1_TIMER_HZ*/);
+
+                if (hidIsChangePending(0))
+                    continue;
+                
+                //if(current_val == ((~VOLUP_BUTTON) & BUTTON_MASK)) {
+                if (current_val == 0b00000101) {
+//                    if (hidIsChangePending(0))
+//                        continue;
+                    hidData = HID_CONTROL_VOLUP;
+                    unsafe {
+                        volatile unsigned char * unsafe lastHidDataUnsafe = &lastHidData;
+                        *lastHidDataUnsafe = hidData;
+                        hidSetChangePending(0);
+                    }
+                } else {                
+#if 1
+                    //if(current_val == ((~VOLDOWN_BUTTON) & BUTTON_MASK)) {
+                    if (current_val == 0b00000110) {
+//                        if (hidIsChangePending(0))
+//                            continue;
+                        hidData = HID_CONTROL_VOLDN;
+                        unsafe {
+                            volatile unsigned char * unsafe lastHidDataUnsafe = &lastHidData;
+                            *lastHidDataUnsafe = hidData;
+                            hidSetChangePending(0);
+                        }
+                    }
+#endif
+                }
                 last_val = current_val;
-//                }
+#endif
+
+                tmr :> current_time;
+                debounce_timeout = current_time + (debounce_delay_ms * 100000/*XS1_TIMER_HZ*/);                
                 break;
         }
     }
