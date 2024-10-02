@@ -266,8 +266,21 @@ void button_task(chanend c_button)
     last_val = current_val;
     while (1) {
         select {  
-            case !is_stable => tmr when timerafter(debounce_timeout) :> void:
+            //case !is_stable => tmr when timerafter(debounce_timeout) :> void:
+            case tmr when timerafter(debounce_timeout) :> void:
                 is_stable = 1;
+                GET_SHARED_GLOBAL(hid_data, g_hid_data);
+                if (last_hid != hid_data) {
+                    printhex(hid_data);                        
+                    if (hid_data < sf_total_states) {
+                        last_hid = hid_data;
+                        status = hid_data;
+                        c_button <: status;
+                        p_leds <: ( ((status << LED_R)) & LED_MASK );
+                    }
+                }
+                tmr :> current_time;
+                debounce_timeout = current_time + (debounce_delay_ms * XS1_TIMER_KHZ);                  
                 break;
 
             case is_stable => p_buttons when pinsneq(current_val) :> current_val: 
